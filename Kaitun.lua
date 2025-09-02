@@ -143,6 +143,7 @@ end
 -- Main logic
 
 local execute = false
+local haveEscanor = hasEscanor()
 
 if getLevel() < levelTarget then
 	execute = true
@@ -184,7 +185,7 @@ if getLevel() < levelTarget then
 	}
 
 	postWebhook(embed)
-elseif getLevel() >= levelTarget and not hasEscanor() then
+elseif getLevel() >= levelTarget and not haveEscanor then
 	execute = true
 	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 
@@ -207,7 +208,7 @@ elseif getLevel() >= levelTarget and not hasEscanor() then
 					},
 					{
 						["name"] = "Has Escanor?",
-						["value"] = tostring(hasEscanor()),
+						["value"] = tostring(haveEscanor),
 						["inline"] = true
 					},
 					{
@@ -225,7 +226,7 @@ elseif getLevel() >= levelTarget and not hasEscanor() then
 
 	postWebhook(embed)
 	getgenv().Config["Summoner"]["Auto Summon Summer"] = true
-elseif getLevel() >= levelTarget and hasEscanor() and getIcedTea() < 300000 then
+elseif getLevel() >= levelTarget and haveEscanor and getIcedTea() < 300000 then
 	execute = true
 	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 
@@ -248,7 +249,7 @@ elseif getLevel() >= levelTarget and hasEscanor() and getIcedTea() < 300000 then
 					},
 					{
 						["name"] = "Has Escanor?",
-						["value"] = tostring(hasEscanor()),
+						["value"] = tostring(haveEscanor),
 						["inline"] = true
 					},
 					{
@@ -267,7 +268,7 @@ elseif getLevel() >= levelTarget and hasEscanor() and getIcedTea() < 300000 then
 	postWebhook(embed)
 	
 	getgenv().Config["Summoner"]["Auto Summon Summer"] = false
-elseif getLevel() >= levelTarget and hasEscanor() and getIcedTea() >= 300000 then
+elseif getLevel() >= levelTarget and haveEscanor and getIcedTea() >= 300000 then
 	-- Account Done!
 	execute = false
 	postWebhook({["content"] = "Player " .. player.Name .. " reached level " .. getLevel() .. " and has Escanor, getting back to lobby..."})
@@ -287,11 +288,11 @@ task.defer(function()
 			break
 		end
 
-		if getIcedTea() >= 375000 and getStage() == "Summer" and not hasEscanor() then
+		if getIcedTea() >= 375000 and getStage() == "Summer" and not haveEscanor then
 			postWebhook("Player " .. player.Name .. " reached 375k Iced Tea, getting back to lobby...")
 			player:Kick("Reached 375k Iced Tea!")
 			break
-		elseif getIcedTea() >= 300000 and getStage() == "Summer" and hasEscanor() then
+		elseif getIcedTea() >= 300000 and getStage() == "Summer" and haveEscanor then
 			postWebhook("@everyone Player " .. player.Name .. " reached 300k Iced Tea and has Escanor, getting back to lobby...")
 			player:Kick("Reached 300k Iced Tea and has Escanor!")
 			break
