@@ -104,7 +104,7 @@ local haveEscanor = false
 	if(isLobby()) then
 		if debug then postWebhook("In lobby, trying to check escanor status...") end
 		local ownedUnitsHandler = require(game:GetService("StarterPlayer").Modules.Interface.Loader.Gameplay.Units.OwnedUnitsHandler)
-		units = ownedUnitsHandler:GetUnits()
+		units = ownedUnitsHandler:GetOwnedUnits()
 	else
 		if debug then postWebhook("In Stage, trying to check escanor status...") end
 		local UnitWindows = require(game:GetService("StarterPlayer").Modules.Interface.Loader.Windows.UnitWindowHandler)
@@ -126,16 +126,13 @@ local haveEscanor = false
 		end
 	end
 
-	if debug == true then setclipboard(http:JSONEncode(units)) end
-
 	for _, unit in pairs(units) do
-		if debug == true then
-			postWebhook(http:JSONEncode(unit))
-		end
-		if unit.ID == "270" then
+		if unit.ID == 270 then
 			haveEscanor = true
-		elseif unit.Identifier ~= nil and unit.Identifier == "270" then
+			break
+		elseif unit.Identifier ~= nil and unit.Identifier == 270 then
 			haveEscanor = true
+			break
 		end
 	end
 
