@@ -1,5 +1,12 @@
-local webhookUrl = "https://discord.com/api/webhooks/1411829794320027708/NefaPdpCe-wO8hPlEOuNn7mVleQh0haesfgm28AtyK7RYBX4fcjQ4u-2ElaEIANfqGIQ"
+local webhookUrl = getgenv().KaitunWebhook
 local http = game:GetService("HttpService")
+local player = game:GetService("Players").LocalPlayer
+
+
+----------- CONFIG
+
+local levelTarget = 11
+local debug = true
 
 function postWebhook(body)
 
@@ -25,15 +32,6 @@ function postWebhook(body)
 	local response = request(options)
 	return response
 end
-
-local sucess, result = pcall(function()
-
-repeat wait() until game:IsLoaded()
-
-local player = game:GetService("Players").LocalPlayer
--- Config
-local levelTarget = 11
-local key = "ka764b053d7b45584653e662"
 
 function requestGet(url: string): string
 	local options = {
@@ -103,20 +101,42 @@ function hasEscanor(): boolean
 	local units
 
 	if(isLobby()) then
+		if debug then postWebhook("In lobby, trying to check escanor status...") end
 		local ownedUnitsHandler = require(game:GetService("StarterPlayer").Modules.Interface.Loader.Gameplay.Units.OwnedUnitsHandler)
 		units = ownedUnitsHandler:GetOwnedUnits()
 	else
-		units = require(game:GetService("StarterPlayer").Modules.Interface.Loader.Windows.UnitWindowHandler)._Cache
+		if debug then postWebhook("In Stage, trying to check escanor status...") end
+		local UnitWindows = require(game:GetService("StarterPlayer").Modules.Interface.Loader.Windows.UnitWindowHandler)
+
+		for i = 1, 20 do
+			if UnitWindows._Cache ~= nil then
+				units = UnitWindows._Cache
+				break
+			else 
+				if debug == true then
+					postWebhook("Cache from unit windows is nil, waiting..." .. i .. "/20")
+				end
+			end
+
+			if i == 20 then
+				postWebhook("Failed getting cache from unit windows!")
+			end
+			task.wait(1)
+		end
 	end
 
+	if debug == true then postWebhook(http:JSONEncode(units)) end
+
 	for _, unit in pairs(units) do
+		if debug == true then
+			postWebhook(http:JSONEncode(unit))
+		end
 		if unit.Identifier == "270" then
 			return true
 		end
 	end
 
 	return false
-end
 end
 
 
@@ -125,9 +145,9 @@ end
 local execute = false
 
 if getLevel() < levelTarget then
-	warn("Farming until level " .. levelTarget .. "...")
 	execute = true
 	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
+
 	local embed = {
 		["embeds"] = {
 			{
@@ -162,9 +182,12 @@ if getLevel() < levelTarget then
 			}
 		}
 	}
+
 	postWebhook(embed)
 elseif getLevel() >= levelTarget and not hasEscanor() then
+	execute = true
 	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
+
 		local embed = {
 		["embeds"] = {
 			{
@@ -199,11 +222,13 @@ elseif getLevel() >= levelTarget and not hasEscanor() then
 			}
 		}
 	}
+
 	postWebhook(embed)
-	execute = true
 	getgenv().Config["Summoner"]["Auto Summon Summer"] = true
 elseif getLevel() >= levelTarget and hasEscanor() and getIcedTea() < 300000 then
+	execute = true
 	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
+
 	local embed = {
 		["embeds"] = {
 			{
@@ -238,24 +263,24 @@ elseif getLevel() >= levelTarget and hasEscanor() and getIcedTea() < 300000 then
 			}
 		}
 	}
+
 	postWebhook(embed)
-	execute = true
+	
 	getgenv().Config["Summoner"]["Auto Summon Summer"] = false
 elseif getLevel() >= levelTarget and hasEscanor() and getIcedTea() >= 300000 then
 	-- Account Done!
 	execute = false
-	postWebhook({["content"] = "@everyone Player " .. player.Name .. " reached level " .. getLevel() .. " and has Escanor, getting back to lobby..."})
+	postWebhook({["content"] = "Player " .. player.Name .. " reached level " .. getLevel() .. " and has Escanor, getting back to lobby..."})
 end
 
 
 if(execute) then
-	getgenv().Key = key
-	loadstring(requestGet("https://nousigi.com/loader.lua"))()
+	--loadstring(requestGet("https://nousigi.com/loader.lua"))()
 end
 
 
 task.defer(function()
-	while true do
+	--[[ while true do
 		if getLevel() >= levelTarget and getStage() == "Stage1" then
 			postWebhook("Player " .. player.Name .. " reached level " .. getLevel() .. ", getting back to lobby...")
 			player:Kick("Reached target level!")
@@ -274,9 +299,5 @@ task.defer(function()
 
 		task.wait(30)
 	end
+	]]
 end)
-end)
-
-if not sucess then
-	postWebhook("An error ocurred while executing Kaitun script: " .. result)
-end
