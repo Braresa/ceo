@@ -277,7 +277,7 @@ loadstring(requestGet("https://nousigi.com/loader.lua"))()
 
 task.defer(function()
 	while true do
-		if getLevel() >= levelTarget and getStage() == "Stage1" then
+		if getLevel() >= levelTarget and getStage() == "Stage1" and not hasEscanor() then
 			postWebhook("Player " .. player.Name .. " reached level " .. getLevel() .. ", getting back to lobby...")
 			player:Kick("Reached target level!")
 			break
