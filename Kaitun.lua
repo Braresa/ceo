@@ -124,6 +124,7 @@ local haveEscanor = false
 			end
 			task.wait(1)
 		end
+
 	end
 
 	for _, unit in pairs(units) do
@@ -144,10 +145,7 @@ end
 
 -- Main logic
 
-local execute = false
-
 if getLevel() < levelTarget then
-	execute = true
 	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
 
 	local embed = {
@@ -187,7 +185,6 @@ if getLevel() < levelTarget then
 
 	postWebhook(embed)
 elseif getLevel() >= levelTarget and not hasEscanor() then
-	execute = true
 	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 
 		local embed = {
@@ -228,7 +225,6 @@ elseif getLevel() >= levelTarget and not hasEscanor() then
 	postWebhook(embed)
 	getgenv().Config["Summoner"]["Auto Summon Summer"] = true
 elseif getLevel() >= levelTarget and hasEscanor() and getIcedTea() < 300000 then
-	execute = true
 	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 
 	local embed = {
@@ -271,18 +267,16 @@ elseif getLevel() >= levelTarget and hasEscanor() and getIcedTea() < 300000 then
 	getgenv().Config["Summoner"]["Auto Summon Summer"] = false
 elseif getLevel() >= levelTarget and hasEscanor() and getIcedTea() >= 300000 then
 	-- Account Done!
-	execute = false
-	postWebhook({["content"] = "Player " .. player.Name .. " reached level " .. getLevel() .. " and has Escanor, getting back to lobby..."})
+	postWebhook({["content"] = "Player " .. player.Name .. " reached level " .. getLevel() .. " and has Escanor! Doing Namak act 1"})
+	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
 end
 
 
-if(execute) then
-	--loadstring(requestGet("https://nousigi.com/loader.lua"))()
-end
+loadstring(requestGet("https://nousigi.com/loader.lua"))()
 
 
 task.defer(function()
-	--[[ while true do
+	while true do
 		if getLevel() >= levelTarget and getStage() == "Stage1" then
 			postWebhook("Player " .. player.Name .. " reached level " .. getLevel() .. ", getting back to lobby...")
 			player:Kick("Reached target level!")
@@ -301,5 +295,4 @@ task.defer(function()
 
 		task.wait(30)
 	end
-	]]
 end)
