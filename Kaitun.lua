@@ -97,14 +97,7 @@ function getLevel(): number
 	return player:GetAttribute("Level")
 end
 
-
-local cacheEscanor = nil
-
-function hasEscanor(): boolean
-
-	if cacheEscanor then
-		return cacheEscanor
-	end
+local haveEscanor = false
 
 	local units
 
@@ -133,23 +126,22 @@ function hasEscanor(): boolean
 		end
 	end
 
-	if debug == true then postWebhook(http:JSONEncode(units)) end
+	if debug == true then setclipboard(http:JSONEncode(units)) end
 
 	for _, unit in pairs(units) do
 		if debug == true then
 			postWebhook(http:JSONEncode(unit))
 		end
 		if unit.ID == "270" then
-			cacheEscanor = true
-			return true
+			haveEscanor = true
 		elseif unit.Identifier ~= nil and unit.Identifier == "270" then
-			cacheEscanor = true
-			return true
+			haveEscanor = true
 		end
 	end
 
-	cacheEscanor = false
-	return false
+
+function hasEscanor(): boolean
+	return haveEscanor
 end
 
 
