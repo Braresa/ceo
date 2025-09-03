@@ -192,6 +192,10 @@ if getStage() == "Time Chamber" then
 							["color"] = 65280,
 							["fields"] = {
 								{
+									["name"] = "Username",
+									["value"] = player.Name,
+								},
+								{
 									["name"] = "Flowers",
 									["value"] = tostring(getFlower()),
 									["inline"] = true,
@@ -219,6 +223,10 @@ if getStage() == "Time Chamber" then
 						["description"] = "Farming timechamber...",
 						["color"] = 65280,
 						["fields"] = {
+							{
+								["name"] = "Username",
+								["value"] = player.Name,
+							},
 							{
 								["name"] = "Flowers",
 								["value"] = tostring(getFlower()),
