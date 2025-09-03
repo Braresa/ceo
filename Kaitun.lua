@@ -400,6 +400,8 @@ if getStage() == "Time Chamber" then
 			player:Kick()
 			break
 		end
+		sendEmbed("Farming Time Chamber...")
+		task.wait(600)
 	end
 else
 	loadstring(requestGet("https://nousigi.com/loader.lua"))()
