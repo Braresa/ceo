@@ -172,7 +172,7 @@ function buyRRfromEventShop(quantity: number, event: string)
 end
 
 function getRemainingRRFromShop(shop)
-    -- SummerShop or WinterShop
+	-- SummerShop or WinterShop
 	local StockHandler = require(game:GetService("StarterPlayer").Modules.Gameplay.StockHandler)
 	return StockHandler.GetStockData(shop)["TraitRerolls"]
 end
@@ -227,7 +227,7 @@ local defaultFields = {
 	{
 		["name"] = "Username",
 		["value"] = player.Name,
-		["inline"] = false
+		["inline"] = false,
 	},
 	{
 		["name"] = "Level",
@@ -237,6 +237,11 @@ local defaultFields = {
 	{
 		["name"] = "Iced Tea",
 		["value"] = tostring(getIcedTea()),
+		["inline"] = true,
+	},
+		{
+		["name"] = "Flower",
+		["value"] = getFlower(),
 		["inline"] = true,
 	},
 	{
@@ -255,24 +260,25 @@ local defaultFields = {
 		["inline"] = true,
 	},
 	{
-		["name"] = "Summer Shop RR's",
-		["value"] = `{getRemainingRRFromShop("SummerShop")}/200`,
-		["inline"] = false,
-	},
-	{
 		["name"] = "Gems / Gold",
 		["value"] = `{getGems()} / {getGold()}`,
-		["inline"] = true
+		["inline"] = true,
 	},
-	{
-		["name"] = "Flower",
-		["value"] = getFlower(),
-		["inline"] = true
-	}
 }
 
+if isLobby() then
+	table.insert(defaultFields, {
+		["name"] = "Summer RR left",
+		["value"] = tostring(getRemainingRRFromShop("SummerShop")),
+		["inline"] = true,
+	})
 
-
+	table.insert(defaultFields, {
+		["name"] = "Winter RR left",
+		["value"] = tostring(getRemainingRRFromShop("WinterShop")),
+		["inline"] = true,
+	})
+end
 
 local function sendEmbed(description)
 	local embed = {
@@ -284,9 +290,9 @@ local function sendEmbed(description)
 				["fields"] = defaultFields,
 				["footer"] = {
 					["text"] = "Made by dotwired.org",
-				}
-			}
-		}
+				},
+			},
+		},
 	}
 	postWebhook(embed)
 end
@@ -295,65 +301,106 @@ end
 if getLevel() < levelTarget then
 	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
 	sendEmbed("Farming until level " .. levelTarget)
-
 -- Stage 2: Escanor farming
 elseif not hasEscanor() then
 	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 	sendEmbed("Farming until Escanor")
 	getgenv().Config["Summoner"]["Auto Summon Summer"] = true
-
--- Stage 3: Summer RR farming
+-- Last Stage: Farm and buy all RR
 else
-	if isLobby() then
-		local icedTea = getIcedTea()
+	if getStage() == "Summer" then
+		loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
+		getgenv().Config["Summoner"]["Auto Summon Summer"] = false
+		sendEmbed("Farming until 300k iced tea")
+	end
+end
 
+if isLobby() and getLevel() >= levelTarget and hasEscanor() then
+	local icedTea = getIcedTea()
+	local flower = getFlower()
+
+	if getRemainingRRFromShop("SummerShop") == 200 then
 		if icedTea >= 300000 then
-			local RRtoBuy = math.min(
-				math.floor(icedTea / 1500),
-				getRemainingRRFromShop("SummerShop")
-			)
-			
-			if RRtoBuy > 0 then
-				buyRRfromEventShop(RRtoBuy, "SummerShop")
-				postWebhook("> Player " .. player.Name .. " bought " .. RRtoBuy .. " RR's from Summer Shop!")
-			end
+			buyRRfromEventShop(200, "SummerShop")
+			sendEmbed("Bought 200 RR from summer shop!")
+		else
+			-- Not enough iced tea, going to
+			loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
+			getgenv().Config["Summoner"]["Auto Summon Summer"] = false
+			sendEmbed("Farming until 300k iced tea")
+			loadstring(requestGet("https://nousigi.com/loader.lua"))()
+			return
 		end
+	end
 
-		if getRemainingRRFromShop("SummerShop") == 0 then
-			postWebhook("> @everyone Player " .. player.Name .. " has bought all RR's from Summer Shop! Going to Time Chamber")
+	print("Player already has 200 RR from summer")
+
+	-- If it reaches here the player already has 200 RR from summer
+
+	if(getRemainingRRFromShop("WinterShop") == 200) then
+		if flower >= 300000 then
+			buyRRfromEventShop(200, "WinterShop")
+			sendEmbed("Bought 200 RR from winter shop!")
+		else
+			-- It doesn't have enough flowers to buy RR, it needs to go to the time chamber
+			sendEmbed("Going to Time Chamber, player doesn't have enough flowers...")
 			game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
 			return
 		end
 	end
 
-	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
-	sendEmbed("Farming until getting all Summer Shop RR")
-	getgenv().Config["Summoner"]["Auto Summon Summer"] = false
+	-- If it reaches here the player already has every RR possible from events and is in lobby
+	postWebhook("@everyone")
+	sendEmbed("CAOS TRAP")
+	return
 end
 
-loadstring(requestGet("https://nousigi.com/loader.lua"))()
 
-task.defer(function()
+if getStage() == "Time Chamber" then
+	while true do 
+		if getFlower() >= 300000 then
+			sendEmbed("Reached 300k flowers, going back to lobby to buy RR...")
+			player:Kick("")
+			break
+		end
+	end
+else
+	loadstring(requestGet("https://nousigi.com/loader.lua"))()
+end
+
+task.spawn(function()
 	-- In game
 
-	if isLobby() then return end
+	if isLobby() then
+		return
+	end
+
 	while true do
 		if getLevel() >= levelTarget and getStage() == "Stage1" and not hasEscanor() then
-			postWebhook("> Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby...")
+			postWebhook(
+				" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
+			)
 			player:Kick("Reached target level!")
 			break
 		end
-	
 
 		local icedTea = getIcedTea()
 
 		if getStage() == "Summer" then
 			if not hasEscanor() and icedTea >= 375000 then
-				postWebhook("> Player **" .. player.Name .. "** reached 375k Iced Tea, getting back to lobby to summon for Escanor...")
+				postWebhook(
+					"> Player **"
+						.. player.Name
+						.. "** reached 375k Iced Tea, getting back to lobby to summon for Escanor..."
+				)
 				player:Kick("Reached 375k Iced Tea! Getting back")
 				break
-			elseif hasEscanor() and icedTea >= 300000 then 
-				postWebhook("**" .. player.Name .. "** reached 300k Iced Tea and has Escanor, getting back to lobby to buy RR...")
+			elseif hasEscanor() and icedTea >= 300000 then
+				postWebhook(
+					"**"
+						.. player.Name
+						.. "** reached 300k Iced Tea and has Escanor, getting back to lobby to buy RR..."
+				)
 				player:Kick("Reached 300k Iced Tea and has Escanor!")
 				break
 			end
