@@ -52,6 +52,8 @@ function isLobby()
 		return true
 	elseif currentPlaceId == inGameId then
 		return false
+	elseif currentPlaceId == 18219125606 then
+		return false
 	else
 		postWebhook("Unknown place ID: " .. currentPlaceId)
 		return false
@@ -177,6 +179,71 @@ function getRemainingRRFromShop(shop)
 	return StockHandler.GetStockData(shop)["TraitRerolls"]
 end
 
+if getStage() == "Time Chamber" then
+	task.spawn(function()
+		while true do
+			if getFlower() >= 300000 and getIcedTea() >= 300000 then
+				postWebhook({
+					["content"] = "@everyone",
+					["embeds"] = {
+						{
+							["title"] = "Kaitun dotwired",
+							["description"] = "Reached 300k Flowers and 300k Iced Tea!",
+							["color"] = 65280,
+							["fields"] = {
+								{
+									["name"] = "Flowers",
+									["value"] = tostring(getFlower()),
+									["inline"] = true,
+								},
+								{
+									["name"] = "Iced Tea",
+									["value"] = tostring(getIcedTea()),
+									["inline"] = true,
+								},
+							},
+							["footer"] = {
+								["text"] = "Made by dotwired.org",
+							},
+						},
+					},
+				})
+				player:Kick()
+				break
+			end
+
+			postWebhook({
+				["embeds"] = {
+					{
+						["title"] = "Kaitun dotwired",
+						["description"] = "Farming timechamber...",
+						["color"] = 65280,
+						["fields"] = {
+							{
+								["name"] = "Flowers",
+								["value"] = tostring(getFlower()),
+								["inline"] = true,
+							},
+							{
+								["name"] = "Iced Tea",
+								["value"] = tostring(getIcedTea()),
+								["inline"] = true,
+							},
+						},
+						["footer"] = {
+							["text"] = "Made by dotwired.org",
+						},
+					},
+				},
+			})
+
+			task.wait(600)
+		end
+	end)
+
+	return
+end
+
 -- Milestones
 
 local haveEscanor = false
@@ -187,7 +254,7 @@ if isLobby() then
 	local ownedUnitsHandler =
 		require(game:GetService("StarterPlayer").Modules.Interface.Loader.Gameplay.Units.OwnedUnitsHandler)
 	units = ownedUnitsHandler:GetOwnedUnits()
-else
+elseif getStage() ~= "Time Chamber" then
 	local UnitWindows = require(game:GetService("StarterPlayer").Modules.Interface.Loader.Windows.UnitWindowHandler)
 
 	for i = 1, 20 do
@@ -297,28 +364,33 @@ if isLobby() then
 
 		task.wait(1.5)
 	end
+end
 
-	table.insert(defaultFields, {
+local function sendEmbed(description)
+	local fields = {}
+	for _, field in ipairs(defaultFields) do
+		table.insert(fields, field)
+	end
+
+	table.insert(fields, {
 		["name"] = "Summer RR left",
 		["value"] = tostring(getRemainingRRFromShop("SummerShop")),
 		["inline"] = true,
 	})
 
-	table.insert(defaultFields, {
+	table.insert(fields, {
 		["name"] = "Winter RR left",
 		["value"] = tostring(getRemainingRRFromShop("SpringShop")),
 		["inline"] = true,
 	})
-end
 
-local function sendEmbed(description)
 	local embed = {
 		["embeds"] = {
 			{
 				["title"] = "Kaitun dotwired",
 				["description"] = description,
 				["color"] = 16711680,
-				["fields"] = defaultFields,
+				["fields"] = fields,
 				["footer"] = {
 					["text"] = "Made by dotwired.org",
 				},
@@ -366,11 +438,8 @@ if isLobby() and getLevel() >= levelTarget and hasEscanor() then
 			-- getgenv().Config["Summoner"]["Auto Summon Summer"] = false
 			-- sendEmbed("Farming until 300k iced tea")
 			-- loadstring(requestGet("https://nousigi.com/loader.lua"))()
-			--sendEmbed("Going to Time Chamber, player doesn't have enough Iced Tea...")
-			sendEmbed("Farming namak until timechamber is fixed ")
-			loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
-			loadstring(requestGet("https://nousigi.com/loader.lua"))()
-			--game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
+			sendEmbed("Going to Time Chamber, player doesn't have enough Iced Tea...")
+			game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
 			return
 		end
 	end
@@ -379,13 +448,11 @@ if isLobby() and getLevel() >= levelTarget and hasEscanor() then
 	if getRemainingRRFromShop("SpringShop") == 200 then
 		if flower >= 300000 then
 			buyRRfromEventShop(200, "SpringShop")
-			sendEmbed("Bought 200 RR from winter shop!")
+			sendEmbed("Bought 200 RR from spring shop!")
 		else
 			-- Not enough Flowers, going to Dried Lake
-			sendEmbed("Farming namak until timechamber is fixed ")
-			loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
-			loadstring(requestGet("https://nousigi.com/loader.lua"))()
-			--game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
+			sendEmbed("Going to Time Chamber, player doesn't have enough Flowers...")
+			game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
 			return
 		end
 	end
@@ -398,19 +465,7 @@ if isLobby() and getLevel() >= levelTarget and hasEscanor() then
 	return
 end
 
-if getStage() == "Time Chamber" then
-	while true do
-		if getFlower() >= 300000 and getIcedTea() >= 300000 then
-			sendEmbed("Reached 300k flowers, going back to lobby to buy RR...")
-			player:Kick()
-			break
-		end
-		sendEmbed("Farming Time Chamber...")
-		task.wait(600)
-	end
-else
-	loadstring(requestGet("https://nousigi.com/loader.lua"))()
-end
+loadstring(requestGet("https://nousigi.com/loader.lua"))()
 
 task.spawn(function()
 	-- In game
