@@ -366,8 +366,11 @@ if isLobby() and getLevel() >= levelTarget and hasEscanor() then
 			-- getgenv().Config["Summoner"]["Auto Summon Summer"] = false
 			-- sendEmbed("Farming until 300k iced tea")
 			-- loadstring(requestGet("https://nousigi.com/loader.lua"))()
-			sendEmbed("Going to Time Chamber, player doesn't have enough Iced Tea...")
-			game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
+			--sendEmbed("Going to Time Chamber, player doesn't have enough Iced Tea...")
+			sendEmbed("Farming namak until timechamber is fixed ")
+			loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
+			loadstring(requestGet("https://nousigi.com/loader.lua"))()
+			--game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
 			return
 		end
 	end
@@ -379,8 +382,10 @@ if isLobby() and getLevel() >= levelTarget and hasEscanor() then
 			sendEmbed("Bought 200 RR from winter shop!")
 		else
 			-- Not enough Flowers, going to Dried Lake
-			sendEmbed("Going to Time Chamber, player doesn't have enough Flowers...")
-			game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
+			sendEmbed("Farming namak until timechamber is fixed ")
+			loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
+			loadstring(requestGet("https://nousigi.com/loader.lua"))()
+			--game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
 			return
 		end
 	end
