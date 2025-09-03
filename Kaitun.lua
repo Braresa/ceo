@@ -239,7 +239,7 @@ local defaultFields = {
 		["value"] = tostring(getIcedTea()),
 		["inline"] = true,
 	},
-		{
+	{
 		["name"] = "Flower",
 		["value"] = getFlower(),
 		["inline"] = true,
@@ -267,6 +267,37 @@ local defaultFields = {
 }
 
 if isLobby() then
+	local levels = {
+		5,
+		10,
+		15,
+		20,
+		25,
+		30,
+		35,
+		40,
+		45,
+		50,
+	}
+
+	for i, level in levels do
+		if getLevel() >= level then
+			local args = {
+				"Claim",
+				level,
+			}
+			game:GetService("ReplicatedStorage")
+				:WaitForChild("Networking")
+				:WaitForChild("Milestones")
+				:WaitForChild("MilestonesEvent")
+				:FireServer(unpack(args))
+		else
+			break
+		end
+
+		task.wait(1.5)
+	end
+
 	table.insert(defaultFields, {
 		["name"] = "Summer RR left",
 		["value"] = tostring(getRemainingRRFromShop("SummerShop")),
@@ -311,7 +342,12 @@ else
 	if getStage() == "Summer" then
 		loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 		getgenv().Config["Summoner"]["Auto Summon Summer"] = false
-		sendEmbed("Farming until 300k iced tea")
+		sendEmbed("Farming Dried Lake")
+	end
+
+	if getStage() == "Stage1" then
+		loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
+		sendEmbed("Farming Namak")
 	end
 end
 
@@ -324,26 +360,26 @@ if isLobby() and getLevel() >= levelTarget and hasEscanor() then
 			buyRRfromEventShop(200, "SummerShop")
 			sendEmbed("Bought 200 RR from summer shop!")
 		else
-			-- Not enough iced tea, going to
-			loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
-			getgenv().Config["Summoner"]["Auto Summon Summer"] = false
-			sendEmbed("Farming until 300k iced tea")
-			loadstring(requestGet("https://nousigi.com/loader.lua"))()
+			-- Not enough iced tea, going to Dried Lake
+
+			-- loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
+			-- getgenv().Config["Summoner"]["Auto Summon Summer"] = false
+			-- sendEmbed("Farming until 300k iced tea")
+			-- loadstring(requestGet("https://nousigi.com/loader.lua"))()
+			sendEmbed("Going to Time Chamber...")
+			game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
 			return
 		end
 	end
-
-	print("Player already has 200 RR from summer")
-
 	-- If it reaches here the player already has 200 RR from summer
 
-	if(getRemainingRRFromShop("SpringShop") == 200) then
+	if getRemainingRRFromShop("SpringShop") == 200 then
 		if flower >= 300000 then
 			buyRRfromEventShop(200, "SpringShop")
 			sendEmbed("Bought 200 RR from winter shop!")
 		else
-			-- It doesn't have enough flowers to buy RR, it needs to go to the time chamber
-			sendEmbed("Going to Time Chamber, player doesn't have enough flowers...")
+			-- Not enough Flowers, going to Dried Lake
+			sendEmbed("Going to Time Chamber...")
 			game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
 			return
 		end
@@ -352,15 +388,16 @@ if isLobby() and getLevel() >= levelTarget and hasEscanor() then
 	-- If it reaches here the player already has every RR possible from events and is in lobby
 	postWebhook("@everyone")
 	sendEmbed("CAOS TRAP")
+
+	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
 	return
 end
 
-
 if getStage() == "Time Chamber" then
-	while true do 
-		if getFlower() >= 300000 then
+	while true do
+		if getFlower() >= 300000 and getIcedTea() >= 300000 then
 			sendEmbed("Reached 300k flowers, going back to lobby to buy RR...")
-			player:Kick("")
+			player:Kick()
 			break
 		end
 	end
@@ -371,7 +408,7 @@ end
 task.spawn(function()
 	-- In game
 
-	if isLobby() then
+	if isLobby() or getStage() == "Time Chamber" then
 		return
 	end
 
