@@ -162,7 +162,7 @@ function buyRRfromEventShop(quantity: number, event: string)
 			:WaitForChild("Summer")
 			:WaitForChild("ShopEvent")
 			:FireServer(unpack(args))
-	elseif event == "WinterShop" then
+	elseif event == "SpringShop" then
 		game:GetService("ReplicatedStorage")
 			:WaitForChild("Networking")
 			:WaitForChild("Winter")
@@ -172,7 +172,7 @@ function buyRRfromEventShop(quantity: number, event: string)
 end
 
 function getRemainingRRFromShop(shop)
-	-- SummerShop or WinterShop
+	-- SummerShop or SpringShop
 	local StockHandler = require(game:GetService("StarterPlayer").Modules.Gameplay.StockHandler)
 	return StockHandler.GetStockData(shop)["TraitRerolls"]
 end
@@ -275,7 +275,7 @@ if isLobby() then
 
 	table.insert(defaultFields, {
 		["name"] = "Winter RR left",
-		["value"] = tostring(getRemainingRRFromShop("WinterShop")),
+		["value"] = tostring(getRemainingRRFromShop("SpringShop")),
 		["inline"] = true,
 	})
 end
@@ -337,9 +337,9 @@ if isLobby() and getLevel() >= levelTarget and hasEscanor() then
 
 	-- If it reaches here the player already has 200 RR from summer
 
-	if(getRemainingRRFromShop("WinterShop") == 200) then
+	if(getRemainingRRFromShop("SpringShop") == 200) then
 		if flower >= 300000 then
-			buyRRfromEventShop(200, "WinterShop")
+			buyRRfromEventShop(200, "SpringShop")
 			sendEmbed("Bought 200 RR from winter shop!")
 		else
 			-- It doesn't have enough flowers to buy RR, it needs to go to the time chamber
