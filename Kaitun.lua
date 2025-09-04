@@ -327,35 +327,47 @@ local haveEscanor = false
 local units
 
 if isLobby() then
-	local UnitWindowsHandler =
-		require(game:GetService("StarterPlayer").Modules.Interface.Loader.Windows.UnitWindowHandler)
-	local UnitExpansionEvent =
-		game:GetService("ReplicatedStorage"):WaitForChild("Networking"):WaitForChild("UnitExpansionEvent")
-	local maxUnits = 100
-	local received = false
-	local connection
+	task.spawn(function()
+		while true do
+			local UnitWindowsHandler =
+				require(game:GetService("StarterPlayer").Modules.Interface.Loader.Windows.UnitWindowHandler)
+			local UnitExpansionEvent =
+				game:GetService("ReplicatedStorage"):WaitForChild("Networking"):WaitForChild("UnitExpansionEvent")
+			local maxUnits = 100
+			local received = false
+			local connection
 
-	UnitExpansionEvent:FireServer("Retrieve")
+			UnitExpansionEvent:FireServer("Retrieve")
 
-	connection = UnitExpansionEvent.OnClientEvent:Connect(function(action, data)
-		if action == "SetData" then
-			maxUnits += 25 * data
-			connection:Disconnect()
-			received = true
+			connection = UnitExpansionEvent.OnClientEvent:Connect(function(action, data)
+				if action == "SetData" then
+					maxUnits += 25 * data
+					connection:Disconnect()
+					received = true
+				end
+			end)
+
+			repeat
+				task.wait()
+			until received
+
+			local TableUtils = require(game:GetService("ReplicatedStorage").Modules.Utilities.TableUtils)
+			local currentUnits = TableUtils.GetDictionaryLength(UnitWindowsHandler._Cache)
+
+			if maxUnits - currentUnits <= 10 then
+				postWebhook(
+					"Player "
+						.. player.Name
+						.. " is expanding unit capacity from "
+						.. maxUnits
+						.. " to "
+						.. (maxUnits + 25)
+				)
+				UnitExpansionEvent:FireServer("Purchase")
+			end
+			task.wait(10)
 		end
 	end)
-
-	repeat task.wait() until received
-
-	local TableUtils = require(game:GetService("ReplicatedStorage").Modules.Utilities.TableUtils)
-	local currentUnits = TableUtils.GetDictionaryLength(UnitWindowsHandler._Cache)
-
-	if maxUnits - currentUnits <= 10 then
-		postWebhook(
-			"Player " .. player.Name .. " is expanding unit capacity from " .. maxUnits .. " to " .. (maxUnits + 25)
-		)
-		UnitExpansionEvent:FireServer("Purchase")
-	end
 
 	local ownedUnitsHandler =
 		require(game:GetService("StarterPlayer").Modules.Interface.Loader.Gameplay.Units.OwnedUnitsHandler)
