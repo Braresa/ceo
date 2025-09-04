@@ -47,6 +47,7 @@ function isLobby()
 
 	local lobbyId = 16146832113
 	local inGameId = 16277809958
+	
 
 	if currentPlaceId == lobbyId then
 		return true
@@ -243,6 +244,8 @@ if getLevel() < levelTarget then
 			end
 		end
 	end)
+
+	return
 end
 
 if getStage() == "Time Chamber" then
@@ -448,6 +451,7 @@ local function sendEmbed(description)
 		table.insert(fields, field)
 	end
 
+	if(isLobby()) then
 	table.insert(fields, {
 		["name"] = "Summer RR left",
 		["value"] = tostring(getRemainingRRFromShop("SummerShop")),
@@ -459,6 +463,7 @@ local function sendEmbed(description)
 		["value"] = tostring(getRemainingRRFromShop("SpringShop")),
 		["inline"] = true,
 	})
+	end
 
 	local embed = {
 		["embeds"] = {
