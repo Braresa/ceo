@@ -329,21 +329,30 @@ local units
 if isLobby() then
 	local UnitWindowsHandler =
 		require(game:GetService("StarterPlayer").Modules.Interface.Loader.Windows.UnitWindowHandler)
-	local maxUnits = debug.getupvalue(UnitWindowsHandler._Init, 14)
+	local UnitExpansionEvent =
+		game:GetService("ReplicatedStorage"):WaitForChild("Networking"):WaitForChild("UnitExpansionEvent")
+	local maxUnits = 100
+	local received = false
+	local connection
+
+	connection = UnitExpansionEvent.OnClientEvent:Connect(function(action, data)
+		if action == "SetData" then
+			maxUnits += 25 * data
+			connection:Disconnect()
+			received = true
+		end
+	end)
+
+	repeat task.wait() until received
+
 	local TableUtils = require(game:GetService("ReplicatedStorage").Modules.Utilities.TableUtils)
 	local currentUnits = TableUtils.GetDictionaryLength(UnitWindowsHandler._Cache)
 
 	if maxUnits - currentUnits <= 10 then
-		local args = {
-			"Purchase",
-		}
 		postWebhook(
 			"Player " .. player.Name .. " is expanding unit capacity from " .. maxUnits .. " to " .. (maxUnits + 25)
 		)
-		game:GetService("ReplicatedStorage")
-			:WaitForChild("Networking")
-			:WaitForChild("UnitExpansionEvent")
-			:FireServer(unpack(args))
+		UnitExpansionEvent:FireServer("Purchase")
 	end
 
 	local ownedUnitsHandler =
