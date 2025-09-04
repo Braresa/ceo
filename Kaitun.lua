@@ -335,6 +335,8 @@ if isLobby() then
 	local received = false
 	local connection
 
+	UnitExpansionEvent:FireServer("Retrieve")
+
 	connection = UnitExpansionEvent.OnClientEvent:Connect(function(action, data)
 		if action == "SetData" then
 			maxUnits += 25 * data
