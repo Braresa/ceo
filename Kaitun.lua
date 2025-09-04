@@ -179,75 +179,6 @@ function getRemainingRRFromShop(shop)
 	return StockHandler.GetStockData(shop)["TraitRerolls"]
 end
 
-if getLevel() < levelTarget then
-	postWebhook({
-		["embeds"] = {
-			{
-				["title"] = "Kaitun dotwired",
-				["description"] = "Farming until level " .. levelTarget,
-				["color"] = 16711680,
-				["fields"] = {
-					{
-						["name"] = "Username",
-						["value"] = player.Name,
-						["inline"] = false,
-					},
-					{
-						["name"] = "Level",
-						["value"] = tostring(getLevel()),
-						["inline"] = true,
-					},
-					{
-						["name"] = "Iced Tea",
-						["value"] = tostring(getIcedTea()),
-						["inline"] = true,
-					},
-					{
-						["name"] = "Flower",
-						["value"] = getFlower(),
-						["inline"] = true,
-					},
-					{
-						["name"] = "Game Stage",
-						["value"] = getStage(),
-						["inline"] = true,
-					},
-					{
-						["name"] = "RR's",
-						["value"] = getRR(),
-						["inline"] = true,
-					},
-					{
-						["name"] = "Gems / Gold",
-						["value"] = `{getGems()} / {getGold()}`,
-						["inline"] = true,
-					},
-				},
-				["footer"] = {
-					["text"] = "Made by dotwired.org",
-				},
-			},
-		},
-	})
-	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
-	loadstring(requestGet("https://nousigi.com/loader.lua"))()
-
-	task.spawn(function()
-		while true do
-			if getLevel() >= levelTarget and getStage() == "Stage1" then
-				postWebhook(
-					" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
-				)
-				game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
-				break
-			end
-
-			task.wait(30)
-		end
-	end)
-
-	return
-end
 
 if getStage() == "Time Chamber" then
 	task.spawn(function()
@@ -515,7 +446,9 @@ local function sendEmbed(description)
 		})
 		table.insert(fields, {
 			["name"] = "Max Units",
-			["value"] = require(game:GetService("StarterPlayer").Modules.Interface.WindowCacheHandler).GetWindow("Units"):WaitForChild("Holder").OwnedUnitsLabel.UnitAmount.Text,
+			["value"] = require(game:GetService("StarterPlayer").Modules.Interface.WindowCacheHandler)
+				.GetWindow("Units")
+				:WaitForChild("Holder").OwnedUnitsLabel.UnitAmount.Text,
 			["inline"] = true,
 		})
 	end
@@ -544,13 +477,15 @@ if getLevel() < levelTarget then
 elseif not hasEscanor() then
 	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 	sendEmbed("Farming until Escanor")
-	if not ignoreSummon then getgenv().Config["Summoner"]["Auto Summon Summer"] = true end
+	if not ignoreSummon then
+		getgenv().Config["Summoner"]["Auto Summon Summer"] = true
+	end
 	-- Last Stage: Farm and buy all RR
 else
 	if getStage() == "Summer" then
 		loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 		getgenv().Config["Summoner"]["Auto Summon Summer"] = false
-		sendEmbed("Farming Dried Lake")
+		sendEmbed("Farming Dried Lake (not getting escanor)")
 	end
 
 	if getStage() == "Stage1" then
@@ -613,6 +548,14 @@ task.spawn(function()
 	while true do
 		local icedTea = getIcedTea()
 
+			if getLevel() >= levelTarget and getStage() == "Stage1" then
+				postWebhook(
+					" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
+				)
+				game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
+				break
+			end
+
 		if getStage() == "Summer" then
 			if not hasEscanor() and icedTea >= 375000 then
 				postWebhook(
@@ -625,9 +568,7 @@ task.spawn(function()
 				break
 			elseif hasEscanor() then
 				postWebhook(
-					"**"
-						.. player.Name
-						.. "** player has escanor but is in Dried Lake... Going to Time Chamber"
+					"**" .. player.Name .. "** player has escanor but is in Dried Lake... Going to Time Chamber"
 				)
 				--player:Kick("Reached 300k Iced Tea and has Escanor!")
 				game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
