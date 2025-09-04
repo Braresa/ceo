@@ -47,7 +47,6 @@ function isLobby()
 
 	local lobbyId = 16146832113
 	local inGameId = 16277809958
-	
 
 	if currentPlaceId == lobbyId then
 		return true
@@ -328,6 +327,25 @@ local haveEscanor = false
 local units
 
 if isLobby() then
+	local UnitWindowsHandler =
+		require(game:GetService("StarterPlayer").Modules.Interface.Loader.Windows.UnitWindowHandler)
+	local maxUnits = debug.getupvalue(UnitWindowsHandler._Init, 14)
+	local TableUtils = require(game:GetService("ReplicatedStorage").Modules.Utilities.TableUtils)
+	local currentUnits = TableUtils.GetDictionaryLength(UnitWindowsHandler._Cache)
+
+	if maxUnits - currentUnits <= 10 then
+		local args = {
+			"Purchase",
+		}
+		postWebhook(
+			"Player " .. player.Name .. " is expanding unit capacity from " .. maxUnits .. " to " .. (maxUnits + 25)
+		)
+		game:GetService("ReplicatedStorage")
+			:WaitForChild("Networking")
+			:WaitForChild("UnitExpansionEvent")
+			:FireServer(unpack(args))
+	end
+
 	local ownedUnitsHandler =
 		require(game:GetService("StarterPlayer").Modules.Interface.Loader.Gameplay.Units.OwnedUnitsHandler)
 	units = ownedUnitsHandler:GetOwnedUnits()
@@ -424,7 +442,6 @@ if isLobby() then
 		50,
 	}
 
-
 	for i, level in levels do
 		if getLevel() >= level then
 			local args = {
@@ -451,18 +468,18 @@ local function sendEmbed(description)
 		table.insert(fields, field)
 	end
 
-	if(isLobby()) then
-	table.insert(fields, {
-		["name"] = "Summer RR left",
-		["value"] = tostring(getRemainingRRFromShop("SummerShop")),
-		["inline"] = true,
-	})
+	if isLobby() then
+		table.insert(fields, {
+			["name"] = "Summer RR left",
+			["value"] = tostring(getRemainingRRFromShop("SummerShop")),
+			["inline"] = true,
+		})
 
-	table.insert(fields, {
-		["name"] = "Winter RR left",
-		["value"] = tostring(getRemainingRRFromShop("SpringShop")),
-		["inline"] = true,
-	})
+		table.insert(fields, {
+			["name"] = "Winter RR left",
+			["value"] = tostring(getRemainingRRFromShop("SpringShop")),
+			["inline"] = true,
+		})
 	end
 
 	local embed = {
