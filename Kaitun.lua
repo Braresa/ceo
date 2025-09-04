@@ -73,6 +73,11 @@ function getStage()
 	return gameHandler.GameData.Stage
 end
 
+function IsWeekend(): boolean
+	local WeekendHandler_upvr = require(game:GetService("ReplicatedStorage").Modules.Gameplay.WeekendHandler)
+	return WeekendHandler_upvr.IsWeekend()
+end
+
 -- Attributes
 
 function getIcedTea(): number
@@ -469,6 +474,24 @@ local function sendEmbed(description)
 	postWebhook(embed)
 end
 
+
+if IsWeekend() and (30 - getLevel()) <= 10 and (getLevel() < 30) then
+	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
+	sendEmbed("(WEEKEND COM TOQUE) Farming until level " .. levelTarget)
+	loadstring(requestGet("https://nousigi.com/loader.lua"))()
+
+	while true do
+		if getLevel() >= 30 then
+			postWebhook("Player " .. player.Name .. " reached level 30, teleporting to lobby...")
+			game:GetService("TeleportService"):Teleport(16146832113, player)
+			break
+		end
+		task.wait(10)
+	end
+
+	return
+end
+
 -- Stage 1: Level farming
 if getLevel() < levelTarget then
 	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
@@ -548,7 +571,7 @@ task.spawn(function()
 	while true do
 		local icedTea = getIcedTea()
 
-			if getLevel() >= levelTarget and getStage() == "Stage1" then
+			if getLevel() >= levelTarget and getStage() == "Stage1" and not IsWeekend() then
 				postWebhook(
 					" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
 				)
