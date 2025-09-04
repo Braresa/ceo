@@ -323,6 +323,7 @@ end
 -- Milestones
 
 local haveEscanor = false
+local ignoreSummon = false
 
 local units
 
@@ -359,8 +360,7 @@ if isLobby() then
 			if maxUnits - currentUnits <= 10 then
 				if getGold() < (timesBought * 15000 + 25000) then
 					postWebhook(player.Name .. " doesn't have enough gold to expand unit capacity! Going to Dried Lake")
-					loadstring(requestGet("https://nousigi.com/loader.lua"))()
-					loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
+					ignoreSummon = true
 				else
 					postWebhook(
 						"Player "
@@ -542,7 +542,7 @@ if getLevel() < levelTarget then
 elseif not hasEscanor() then
 	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 	sendEmbed("Farming until Escanor")
-	getgenv().Config["Summoner"]["Auto Summon Summer"] = true
+	if not ignoreSummon then getgenv().Config["Summoner"]["Auto Summon Summer"] = true end
 	-- Last Stage: Farm and buy all RR
 else
 	if getStage() == "Summer" then
