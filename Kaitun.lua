@@ -232,7 +232,17 @@ if getLevel() < levelTarget then
 	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
 	loadstring(requestGet("https://nousigi.com/loader.lua"))()
 
-	return
+	task.spawn(function()
+		while true do
+			if getLevel() >= levelTarget and getStage() == "Stage1" then
+				postWebhook(
+					" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
+				)
+				player:Kick("Reached target level!")
+				break
+			end
+		end
+	end)
 end
 
 if getStage() == "Time Chamber" then
@@ -468,12 +478,12 @@ end
 if getLevel() < levelTarget then
 	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
 	sendEmbed("Farming until level " .. levelTarget)
--- Stage 2: Escanor farming
+	-- Stage 2: Escanor farming
 elseif not hasEscanor() then
 	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 	sendEmbed("Farming until Escanor")
 	getgenv().Config["Summoner"]["Auto Summon Summer"] = true
--- Last Stage: Farm and buy all RR
+	-- Last Stage: Farm and buy all RR
 else
 	if getStage() == "Summer" then
 		loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
@@ -539,14 +549,6 @@ task.spawn(function()
 	end
 
 	while true do
-		if getLevel() >= levelTarget and getStage() == "Stage1" and not hasEscanor() then
-			postWebhook(
-				" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
-			)
-			player:Kick("Reached target level!")
-			break
-		end
-
 		local icedTea = getIcedTea()
 
 		if getStage() == "Summer" then
