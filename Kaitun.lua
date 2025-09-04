@@ -179,6 +179,62 @@ function getRemainingRRFromShop(shop)
 	return StockHandler.GetStockData(shop)["TraitRerolls"]
 end
 
+if getLevel() < levelTarget then
+	postWebhook({
+		["embeds"] = {
+			{
+				["title"] = "Kaitun dotwired",
+				["description"] = "Farming until level " .. levelTarget,
+				["color"] = 16711680,
+				["fields"] = {
+					{
+						["name"] = "Username",
+						["value"] = player.Name,
+						["inline"] = false,
+					},
+					{
+						["name"] = "Level",
+						["value"] = tostring(getLevel()),
+						["inline"] = true,
+					},
+					{
+						["name"] = "Iced Tea",
+						["value"] = tostring(getIcedTea()),
+						["inline"] = true,
+					},
+					{
+						["name"] = "Flower",
+						["value"] = getFlower(),
+						["inline"] = true,
+					},
+					{
+						["name"] = "Game Stage",
+						["value"] = getStage(),
+						["inline"] = true,
+					},
+					{
+						["name"] = "RR's",
+						["value"] = getRR(),
+						["inline"] = true,
+					},
+					{
+						["name"] = "Gems / Gold",
+						["value"] = `{getGems()} / {getGold()}`,
+						["inline"] = true,
+					},
+				},
+				["footer"] = {
+					["text"] = "Made by dotwired.org",
+				},
+			},
+		},
+	})
+	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
+	loadstring(requestGet("https://nousigi.com/loader.lua"))()
+
+	return
+end
+
 if getStage() == "Time Chamber" then
 	task.spawn(function()
 		while true do
