@@ -241,6 +241,8 @@ if getLevel() < levelTarget then
 				game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
 				break
 			end
+
+			task.wait(30)
 		end
 	end)
 
