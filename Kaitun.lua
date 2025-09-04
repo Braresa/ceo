@@ -238,7 +238,7 @@ if getLevel() < levelTarget then
 				postWebhook(
 					" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
 				)
-				player:Kick("Reached target level!")
+				game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
 				break
 			end
 		end
@@ -278,7 +278,7 @@ if getStage() == "Time Chamber" then
 						},
 					},
 				})
-				player:Kick()
+				game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
 				break
 			end
 
@@ -421,12 +421,14 @@ if isLobby() then
 		50,
 	}
 
+
 	for i, level in levels do
 		if getLevel() >= level then
 			local args = {
 				"Claim",
 				level,
 			}
+			--!
 			game:GetService("ReplicatedStorage")
 				:WaitForChild("Networking")
 				:WaitForChild("Milestones")
@@ -558,7 +560,8 @@ task.spawn(function()
 						.. player.Name
 						.. "** reached 375k Iced Tea, getting back to lobby to summon for Escanor..."
 				)
-				player:Kick("Reached 375k Iced Tea! Getting back")
+				--player:Kick("Reached 375k Iced Tea! Getting back")
+				game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
 				break
 			elseif hasEscanor() and icedTea >= 300000 then
 				postWebhook(
@@ -566,7 +569,8 @@ task.spawn(function()
 						.. player.Name
 						.. "** reached 300k Iced Tea and has Escanor, getting back to lobby to buy RR..."
 				)
-				player:Kick("Reached 300k Iced Tea and has Escanor!")
+				--player:Kick("Reached 300k Iced Tea and has Escanor!")
+				game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
 				break
 			end
 		end
