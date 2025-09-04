@@ -334,6 +334,7 @@ if isLobby() then
 			local UnitExpansionEvent =
 				game:GetService("ReplicatedStorage"):WaitForChild("Networking"):WaitForChild("UnitExpansionEvent")
 			local maxUnits = 100
+			local timesBought
 			local received = false
 			local connection
 
@@ -342,6 +343,7 @@ if isLobby() then
 			connection = UnitExpansionEvent.OnClientEvent:Connect(function(action, data)
 				if action == "SetData" then
 					maxUnits += 25 * data
+					timesBought = data
 					connection:Disconnect()
 					received = true
 				end
@@ -355,15 +357,21 @@ if isLobby() then
 			local currentUnits = TableUtils.GetDictionaryLength(UnitWindowsHandler._Cache)
 
 			if maxUnits - currentUnits <= 10 then
-				postWebhook(
-					"Player "
-						.. player.Name
-						.. " is expanding unit capacity from "
-						.. maxUnits
-						.. " to "
-						.. (maxUnits + 25)
-				)
-				UnitExpansionEvent:FireServer("Purchase")
+				if getGold < (timesBought * 15000 + 25000) then
+					postWebhook(player.Name .. " doesn't have enough gold to expand unit capacity! Going to Dried Lake")
+					loadstring(requestGet("https://nousigi.com/loader.lua"))()
+					loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
+				else
+					postWebhook(
+						"Player "
+							.. player.Name
+							.. " is expanding unit capacity from "
+							.. maxUnits
+							.. " to "
+							.. (maxUnits + 25)
+					)
+					UnitExpansionEvent:FireServer("Purchase")
+				end
 			end
 			task.wait(10)
 		end
@@ -501,6 +509,11 @@ local function sendEmbed(description)
 		table.insert(fields, {
 			["name"] = "Winter RR left",
 			["value"] = tostring(getRemainingRRFromShop("SpringShop")),
+			["inline"] = true,
+		})
+		table.insert(fields, {
+			["name"] = "Max Units",
+			["value"] = require(game:GetService("StarterPlayer").Modules.Interface.WindowCacheHandler).GetWindow("Units"):WaitForChild("Holder").OwnedUnitsLabel.UnitAmount.Text,
 			["inline"] = true,
 		})
 	end
