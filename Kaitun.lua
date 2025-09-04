@@ -357,7 +357,7 @@ if isLobby() then
 			local currentUnits = TableUtils.GetDictionaryLength(UnitWindowsHandler._Cache)
 
 			if maxUnits - currentUnits <= 10 then
-				if getGold < (timesBought * 15000 + 25000) then
+				if getGold() < (timesBought * 15000 + 25000) then
 					postWebhook(player.Name .. " doesn't have enough gold to expand unit capacity! Going to Dried Lake")
 					loadstring(requestGet("https://nousigi.com/loader.lua"))()
 					loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
