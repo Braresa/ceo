@@ -621,14 +621,14 @@ task.spawn(function()
 				--player:Kick("Reached 375k Iced Tea! Getting back")
 				game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
 				break
-			elseif hasEscanor() and icedTea >= 300000 then
+			elseif hasEscanor() then
 				postWebhook(
 					"**"
 						.. player.Name
-						.. "** reached 300k Iced Tea and has Escanor, getting back to lobby to buy RR..."
+						.. "** player has escanor but is in Dried Lake... Going to Time Chamber"
 				)
 				--player:Kick("Reached 300k Iced Tea and has Escanor!")
-				game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
+				game:GetService("TeleportService"):Teleport(18219125606, game:GetService("Players").LocalPlayer)
 				break
 			end
 		end
