@@ -532,6 +532,17 @@ function start()
 				WebhookManager.post("Going to Time Chamber to farm resources (LOBBY)", 15844367, data)
 				continue = false
 			end
+		elseif
+			(Lobby.getRemainingRRFromEventShop("SummerShop") == 0)
+			and(Lobby.getRemainingRRFromEventShop("SpringShop") == 200)
+			then
+				-- Bought all Summer RR but not Spring RR (this is due to old kaitun), going to spring shop
+				if flowers >= 300000 then
+					Lobby.buyAllRRFromEventShop("SpringShop")
+					data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
+					data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
+					WebhookManager.post("Bought all RR from Spring Shop (LOBBY)", 5763719, data)
+				end
 		end
 
 		if continue then
@@ -549,10 +560,11 @@ function start()
 			hasEscanor = tostring(Game.hasEscanor()),
 			stage = Game.getStage(),
 		}
+
 		if level < CONFIG.LEVEL.MINIMUM_LEVEL_TARGET then
 			-- Farming until level 11 (IN-GAME)
 			loadNousigi("NamakLevelFarm")
-			WebhookManager.post("Going to Namak until level 11 (IN-GAME)", 5763719, data)
+			WebhookManager.post("Farming Namak until level 11 (IN-GAME)", 5763719, data)
 			print("Going to Namak until level 11 (IN-GAME)")
 			continue = false
 
@@ -569,10 +581,10 @@ function start()
 			end)
 		end
 
-		if CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND and IsWeekend() and (level < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET) and continue then
+		if IsWeekend() and (level < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET) and continue then
 			-- Farming until level 50 (IN-GAME)
 			loadNousigi("NamakLevelFarm")
-			WebhookManager.post("Going to Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (IN-GAME)", 5763719, data)
+			WebhookManager.post("Farming Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (IN-GAME)", 5763719, data)
 			print("Going to Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (IN-GAME)")
 			continue = false
 
@@ -585,6 +597,16 @@ function start()
 
 				if Player:GetAttribute("Level") >= CONFIG.WEEKEND_LEVEL_TARGET then
 					WebhookManager.post("Reached level " .. CONFIG.WEEKEND_LEVEL_TARGET .. ", going back to lobby", 5763719, data)
+					teleportToLobby()
+				end
+
+				if Game.getStage() ~= "Stage1" then
+					WebhookManager.post("The player is in " .. Game.getStage() .. ", going back to lobby", 5763719, data)
+					teleportToLobby()
+				end
+
+				if not IsWeekend() then
+					WebhookManager.post("It's no longer weekend, going back to lobby", 5763719, data)
 					teleportToLobby()
 				end
 			end)
