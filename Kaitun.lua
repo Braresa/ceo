@@ -184,7 +184,6 @@ function getRemainingRRFromShop(shop)
 	return StockHandler.GetStockData(shop)["TraitRerolls"]
 end
 
-
 if getStage() == "Time Chamber" then
 	task.spawn(function()
 		while true do
@@ -474,28 +473,6 @@ local function sendEmbed(description)
 	postWebhook(embed)
 end
 
-
-if IsWeekend() and (30 - getLevel()) <= 10 and (getLevel() < 30) then
-	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
-	sendEmbed("(WEEKEND COM TOQUE) Farming until level " .. levelTarget)
-	loadstring(requestGet("https://nousigi.com/loader.lua"))()
-
-
-	task.spawn(function()
-		while true do
-			if getLevel() >= 30 then
-				postWebhook(
-					" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
-				)
-				game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
-				break
-			end
-			task.wait(30)
-		end
-	end)
-
-end
-
 -- Stage 1: Level farming
 if getLevel() < levelTarget then
 	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
@@ -519,9 +496,9 @@ elseif not IsWeekend() then
 		loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
 		sendEmbed("Farming Namak")
 	end
-elseif IsWeekend() then
+elseif IsWeekend() and (30 - getLevel()) <= 10 and (getLevel() < 30) then
 	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
-	sendEmbed("Farming until level " .. levelTarget .. " (WEEKEND COM TOQUE)")
+	sendEmbed("(IS WEEKEND) Farming until level 30")
 end
 
 if isLobby() and getLevel() >= levelTarget and hasEscanor() then
@@ -577,14 +554,21 @@ task.spawn(function()
 
 	while true do
 		local icedTea = getIcedTea()
+		if getLevel() >= 30 and IsWeekend() and getStage() == "Stage1" then
+			postWebhook(
+				" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
+			)
+			game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
+			break
+		end
 
-			if getLevel() >= levelTarget and getStage() == "Stage1" and not IsWeekend() then
-				postWebhook(
-					" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
-				)
-				game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
-				break
-			end
+		if getLevel() >= levelTarget and getStage() == "Stage1" and not IsWeekend() then
+			postWebhook(
+				" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
+			)
+			game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
+			break
+		end
 
 		if getStage() == "Summer" then
 			if not hasEscanor() and icedTea >= 375000 then
