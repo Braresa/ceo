@@ -16,7 +16,7 @@ local CONFIG = getgenv().KaitunWiredConfig
 			TIME_CHAMBER = 18219125606,
 		},
 		NOUSIGI = {
-			KEY = getgenv().Key or "",
+			KEY = getgenv().Key or "PMGAaZenDlLFmJBEcbhIbYSnmPIGnPLL",
 			CONFIGS = {
 				NAMAK_LEVEL_FARM = "https://paste.dotwired.org/Namak.txt",
 				DRIED_LAKE = "https://paste.dotwired.org/Dried%20Lake.txt",
@@ -274,12 +274,12 @@ local Lobby = {
 		local level = getAttribute("Level")
 		local LevelMilestones = { 5, 10, 15, 20, 25, 30, 35, 40, 45, 50 }
 
-		-- Disabling level pop up
 		local popupEvent =
 			ReplicatedStorage:WaitForChild("Networking"):WaitForChild("ClientListeners"):WaitForChild("PopupEvent")
 
-		for _, connection in ipairs(getconnections(popupEvent)) do
-			connection:Disconnect()
+
+		for _,connection in ipairs(getconnections(popupEvent.OnClientEvent)) do
+			connection:Disable()
 		end
 
 		for _, milestone in ipairs(LevelMilestones) do
@@ -288,11 +288,12 @@ local Lobby = {
 					:WaitForChild("Milestones")
 					:WaitForChild("MilestonesEvent")
 					:FireServer("Claim", milestone)
+				print("Claimed level milestone for level " .. milestone)
 			else
 				break
 			end
 
-			task.wait(2)
+			task.wait(1)
 		end
 	end,
 
@@ -376,7 +377,7 @@ local Lobby = {
 		end
 
 		local OwnedUnitsHandler =
-			require(game:GetService("StarterPlayer").Modules.Interface.Loader.Windows.UnitWindowHandler)
+			require(game:GetService("StarterPlayer").Modules.Interface.Loader.Gameplay.Units.OwnedUnitsHandler)
 		local units = OwnedUnitsHandler:GetOwnedUnits()
 
 		for attempt = 1, 20 do
@@ -449,6 +450,7 @@ function start()
 		end
 		getgenv().Key = CONFIG.NOUSIGI.KEY
 		loadstring(game:HttpGet("https://nousigi.com/loader.lua"))()
+		print("Loaded Nousigi with config: " .. config)
 	end
 
 	-- LOBBY LOGIC
@@ -470,7 +472,7 @@ function start()
 			continue = false
 		end
 
-		if CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND and IsWeekend() and (level < CONFIG.WEEKEND_LEVEL_TARGET) and continue then
+		if CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND and IsWeekend() and (level < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET) and continue then
 			-- Going to namak to farm Level (is weekend, priority)
 			loadNousigi("NamakLevelFarm")
 			WebhookManager.post("Going to Namak until level 50 (WEEKEND) (LOBBY)", 1752220, data)
@@ -520,7 +522,7 @@ function start()
 		if level < CONFIG.LEVEL.MINIMUM_LEVEL_TARGET then
 			-- Farming until level 11 (IN-GAME)
 			loadNousigi("NamakLevelFarm")
-			WebhookManager.post("Going to Namak until level 11 (IN-GAME)", 1752220, data)
+			WebhookManager.post("Going to Namak until level 11 (IN-GAME)", 5763719, data)
 			continue = false
 
 			-- Checking Level (Namak, first step of kaitun)
@@ -536,10 +538,10 @@ function start()
 			end)
 		end
 
-		if CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND and IsWeekend() and (level < CONFIG.WEEKEND_LEVEL_TARGET) and continue then
+		if CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND and IsWeekend() and (level < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET) and continue then
 			-- Farming until level 50 (IN-GAME)
 			loadNousigi("NamakLevelFarm")
-			WebhookManager.post("Going to Namak until level 50 (WEEKEND) (IN-GAME)", 1752220, data)
+			WebhookManager.post("Going to Namak until level 50 (WEEKEND) (IN-GAME)", 5763719, data)
 			continue = false
 
 			-- Checking level (weekend, farming til 50)
@@ -558,7 +560,7 @@ function start()
 		if not Game.hasEscanor() and continue then
 			-- Farming until Escanor (IN-GAME)
 			loadNousigi("DriedLakeSummon")
-			WebhookManager.post("Going to Dried Lake to farm Escanor (IN-GAME)", 16776960, data)
+			WebhookManager.post("Going to Dried Lake to farm Escanor (IN-GAME)", 5763719, data)
 			continue = false
 
 			Player.AttributeChanged:Connect(function(attribute)
@@ -586,6 +588,7 @@ function start()
 	if isTimeChamber() then
 		-- Checking if the player has enough resources
 		Player.AttributeChanged:Connect(function(attribute)
+			print("[AttributeChanged] (TimeChamber):", attribute)
 			if attribute ~= "IcedTea" or attribute ~= "Flowers" then
 				return
 			end
