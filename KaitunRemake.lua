@@ -91,22 +91,22 @@ local WebhookManager = {
 			},
 			{
 				["name"] = "Has Escanor?",
-				["value"] = data.hasEscanor or "N/A",
+				["value"] = if data.hasEscanor then data.hasEscanor else "N/A",
 				["inline"] = true,
 			},
 			{
 				["name"] = "Game Stage",
-				["value"] = data.stage or "N/A",
+				["value"] = if data.stage then data.stage else "N/A",
 				["inline"] = true,
 			},
 			{
 				["name"] = "RR's",
-				["value"] = tostring(getAttribute("TraitRerolls")),
+				["value"] = if getAttribute("TraitRerolls") then getAttribute("TraitRerolls") else "N/A",
 				["inline"] = true,
 			},
 			{
 				["name"] = "Gems / Gold",
-				["value"] = `{getAttribute("Gems")} / {getAttribute("Gold")}`,
+				["value"] = `{if getAttribute("Gems") then getAttribute("Gems") else "N/A"} / {if getAttribute("Gold") then getAttribute("Gold") else "N/A"}`,
 				["inline"] = true,
 			},
 		}
