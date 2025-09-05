@@ -473,12 +473,15 @@ local function sendEmbed(description)
 	postWebhook(embed)
 end
 
+if IsWeekend() and (30 - getLevel()) <= 10 and (getLevel() < 30) then
+	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
+	sendEmbed("(IS WEEKEND) Farming until level 30")
 -- Stage 1: Level farming
-if getLevel() < levelTarget then
+elseif getLevel() < levelTarget then
 	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
 	sendEmbed("Farming until level " .. levelTarget)
 	-- Stage 2: Escanor farming
-elseif not hasEscanor() and not IsWeekend() then
+elseif not hasEscanor() then
 	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 	sendEmbed("Farming until Escanor")
 	if not ignoreSummon then
@@ -496,9 +499,6 @@ elseif not IsWeekend() then
 		loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
 		sendEmbed("Farming Namak")
 	end
-elseif IsWeekend() and (30 - getLevel()) <= 10 and (getLevel() < 30) then
-	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
-	sendEmbed("(IS WEEKEND) Farming until level 30")
 end
 
 if isLobby() and getLevel() >= levelTarget and hasEscanor() then
@@ -562,7 +562,7 @@ task.spawn(function()
 			break
 		end
 
-		if getLevel() >= levelTarget and getStage() == "Stage1" and not IsWeekend() then
+		if getLevel() >= levelTarget and getStage() == "Stage1" then
 			postWebhook(
 				" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
 			)
