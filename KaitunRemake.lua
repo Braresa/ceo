@@ -525,7 +525,7 @@ function start()
 				-- Bought all RR
 				data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
 				data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
-				WebhookManager.post("Bought all RR from event shops (LOBBY)", 5763719, data, true)
+				WebhookManager.post("Bought all RR from event shops (LOBBY)", 5763719, data)
 			else
 				-- Not enough resources, going to timechamber
 				teleportToPlace(CONFIG.PLACE_IDS.TIME_CHAMBER)
@@ -535,7 +535,10 @@ function start()
 		end
 
 		if continue then
-			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, nil, true)
+			data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
+			data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
+
+			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, data, true)
 		end
 	end
 
