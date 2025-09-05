@@ -1,4 +1,3 @@
-
 local CONFIG = getgenv().KaitunWiredConfig
 	or {
 		LEVEL = {
@@ -20,7 +19,9 @@ local CONFIG = getgenv().KaitunWiredConfig
 			},
 		},
 		WEBHOOK_URL = "https://discord.com/api/webhooks/1413475272316948500/iHTq99gxv-bX5v1c9JnorJMvWub3ihldMpgucvYREzRu8r-U1pp5B273UnuZjoYuBR5f",
-		ERROR_WEBHOOK_URL = "https://discord.com/api/webhooks/1413456894978293760/x69F2siE7P-rFGl4xuZBCKXLGosUS9sukyPjy9ui1aGBmU-guuHG5CYU0J569dG6tLlf"
+		ERROR_WEBHOOK_URL = "https://discord.com/api/webhooks/1413456894978293760/x69F2siE7P-rFGl4xuZBCKXLGosUS9sukyPjy9ui1aGBmU-guuHG5CYU0J569dG6tLlf",
+		SPREADSHEET_REST_URL = "https://api.sheetbest.com/sheets/3442746d-a5d6-4725-b3e1-d052725f4157",
+		API_KEY = "2mU-nRF50COA5IFzLUjMZ$Uvd3@1FW@PxsmFduisfD!T%rgg3cJicSISKC#BO7Sw",
 	}
 
 local CACHE = {
@@ -33,12 +34,13 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TeleportService = game:GetService("TeleportService")
 local StarterPlayer = game:GetService("StarterPlayer")
+local RunService = game:GetService("RunService")
 
 local Player = Players.LocalPlayer
 
 -- Core game functions (works on any place)
 
-function isLobby(): boolean
+function isLobby()
 	return game.PlaceId == CONFIG.PLACE_IDS.LOBBY
 end
 
@@ -46,7 +48,7 @@ function isGame()
 	return game.PlaceId == CONFIG.PLACE_IDS.INGAME
 end
 
-function isTimeChamber(): boolean
+function isTimeChamber()
 	return game.PlaceId == CONFIG.PLACE_IDS.TIME_CHAMBER
 end
 
@@ -168,7 +170,6 @@ local WebhookManager = {
 
 		local body = HTTP:JSONEncode(embed)
 
-
 		if CONFIG.WEBHOOK_URL == nil then
 			warn("Webhook URL is not set.")
 			return nil
@@ -289,8 +290,7 @@ local Lobby = {
 		local popupEvent =
 			ReplicatedStorage:WaitForChild("Networking"):WaitForChild("ClientListeners"):WaitForChild("PopupEvent")
 
-
-		for _,connection in ipairs(getconnections(popupEvent.OnClientEvent)) do
+		for _, connection in ipairs(getconnections(popupEvent.OnClientEvent)) do
 			connection:Disable()
 		end
 
@@ -341,9 +341,7 @@ local Lobby = {
 
 				if maxUnits - currentUnits <= 10 then
 					if getAttribute("Gold") < (timesBought * 15000 + 25000) then
-						WebhookManager.warn(
-							Player.Name .. " doesn't have enough gold to expand unit capacity!"
-						)
+						WebhookManager.warn(Player.Name .. " doesn't have enough gold to expand unit capacity!")
 					else
 						WebhookManager.post(
 							"Player "
@@ -454,6 +452,8 @@ local Game = {
 	end,
 }
 
+local state = "EXECUTING"
+
 function start()
 	local level = getAttribute("Level")
 	local icedTea = getAttribute("IcedTea")
@@ -472,7 +472,7 @@ function start()
 			getgenv().Config["Summoner"]["Auto Summon Summer"] = true
 		end
 		getgenv().Key = CONFIG.NOUSIGI.KEY
-		loadstring(game:HttpGet("https://nousigi.com/loader.lua"))()
+		-- loadstring(game:HttpGet("https://nousigi.com/loader.lua"))()
 		print("Loaded Nousigi with config: " .. config)
 	end
 
@@ -489,19 +489,30 @@ function start()
 		}
 		local continue = true
 
-		if level < CONFIG.LEVEL.MINIMUM_LEVEL_TARGET then
-			-- Going to namak until level 11 (LOBBY)
+		if
+			CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND
+			and IsWeekend()
+			and (level < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET)
+			and continue
+		then
+			-- Going to namak to farm Level (is weekend, priority)
 			loadNousigi("NamakLevelFarm")
-			WebhookManager.post("Going to Namak until level 11 (LOBBY)", 1752220, data)
-			print("Going to Namak until level 11 (LOBBY)")
+			WebhookManager.post(
+				"Going to Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (LOBBY)",
+				1752220,
+				data
+			)
+			state = `LOBBY_LV_{CONFIG.LEVEL.WEEKEND_LEVEL_TARGET}`
+			print("Going to Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (LOBBY)")
 			continue = false
 		end
 
-		if CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND and IsWeekend() and (level < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET) and continue then
-			-- Going to namak to farm Level (is weekend, priority)
+		if level < CONFIG.LEVEL.MINIMUM_LEVEL_TARGET and continue then
+			-- Going to namak until level 11 (LOBBY)
 			loadNousigi("NamakLevelFarm")
-			WebhookManager.post("Going to Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (LOBBY)", 1752220, data)
-			print("Going to Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (LOBBY)")
+			WebhookManager.post("Going to Namak until level 11 (LOBBY)", 1752220, data)
+			state = "LOBBY_LV_11"
+			print("Going to Namak until level 11 (LOBBY)")
 			continue = false
 		end
 
@@ -509,6 +520,7 @@ function start()
 			-- Farming until Escanor (LOBBY)
 			loadNousigi("DriedLakeSummon")
 			WebhookManager.post("Going to Dried Lake to farm Escanor (LOBBY)", 16705372, data)
+			state = "LOBBY_ESCANOR"
 			print("Going to Dried Lake to farm Escanor (LOBBY)")
 			continue = false
 		end
@@ -530,19 +542,20 @@ function start()
 				-- Not enough resources, going to timechamber
 				teleportToPlace(CONFIG.PLACE_IDS.TIME_CHAMBER)
 				WebhookManager.post("Going to Time Chamber to farm resources (LOBBY)", 15844367, data)
+				state = "LOBBY_TIME_CHAMBER"
 				continue = false
 			end
 		elseif
 			(Lobby.getRemainingRRFromEventShop("SummerShop") == 0)
-			and(Lobby.getRemainingRRFromEventShop("SpringShop") == 200)
-			then
-				-- Bought all Summer RR but not Spring RR (this is due to old kaitun), going to spring shop
-				if flowers >= 300000 then
-					Lobby.buyAllRRFromEventShop("SpringShop")
-					data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
-					data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
-					WebhookManager.post("Bought all RR from Spring Shop (LOBBY)", 5763719, data)
-				end
+			and (Lobby.getRemainingRRFromEventShop("SpringShop") == 200)
+		then
+			-- Bought all Summer RR but not Spring RR (this is due to old kaitun), going to spring shop
+			if flowers >= 300000 then
+				Lobby.buyAllRRFromEventShop("SpringShop")
+				data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
+				data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
+				WebhookManager.post("Bought all RR from Spring Shop (LOBBY)", 5763719, data)
+			end
 		end
 
 		if continue then
@@ -561,33 +574,17 @@ function start()
 			stage = Game.getStage(),
 		}
 
-		if level < CONFIG.LEVEL.MINIMUM_LEVEL_TARGET then
-			-- Farming until level 11 (IN-GAME)
-			loadNousigi("NamakLevelFarm")
-			WebhookManager.post("Farming Namak until level 11 (IN-GAME)", 5763719, data)
-			print("Going to Namak until level 11 (IN-GAME)")
-			continue = false
-
-			-- Checking Level (Namak, first step of kaitun)
-			Player.AttributeChanged:Connect(function(attribute)
-				if attribute ~= "Level" then
-					return
-				end
-
-				if Player:GetAttribute("Level") >= CONFIG.LEVEL.MINIMUM_LEVEL_TARGET then
-					WebhookManager.post("Reached level " .. CONFIG.LEVEL.MINIMUM_LEVEL_TARGET .. ", going back to lobby", 5763719, data)
-					teleportToPlace(CONFIG.PLACE_IDS.LOBBY)
-				end
-			end)
-		end
-
 		if IsWeekend() and (level < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET) and continue then
 			-- Farming until level 50 (IN-GAME)
 			loadNousigi("NamakLevelFarm")
-			WebhookManager.post("Farming Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (IN-GAME)", 5763719, data)
+			WebhookManager.post(
+				"Farming Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (IN-GAME)",
+				5763719,
+				data
+			)
+			state = `GAME_LV_{CONFIG.LEVEL.WEEKEND_LEVEL_TARGET}`
 			print("Going to Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (IN-GAME)")
 			continue = false
-
 
 			-- Checking level (weekend, farming til 50)
 			Player.AttributeChanged:Connect(function(attribute)
@@ -596,12 +593,20 @@ function start()
 				end
 
 				if Player:GetAttribute("Level") >= CONFIG.WEEKEND_LEVEL_TARGET then
-					WebhookManager.post("Reached level " .. CONFIG.WEEKEND_LEVEL_TARGET .. ", going back to lobby", 5763719, data)
+					WebhookManager.post(
+						"Reached level " .. CONFIG.WEEKEND_LEVEL_TARGET .. ", going back to lobby",
+						5763719,
+						data
+					)
 					teleportToLobby()
 				end
 
 				if Game.getStage() ~= "Stage1" then
-					WebhookManager.post("The player is in " .. Game.getStage() .. ", going back to lobby", 5763719, data)
+					WebhookManager.post(
+						"The player is in " .. Game.getStage() .. ", going back to lobby",
+						5763719,
+						data
+					)
 					teleportToLobby()
 				end
 
@@ -612,10 +617,36 @@ function start()
 			end)
 		end
 
+		if level < CONFIG.LEVEL.MINIMUM_LEVEL_TARGET and continue then
+			-- Farming until level 11 (IN-GAME)
+			loadNousigi("NamakLevelFarm")
+			WebhookManager.post("Farming Namak until level 11 (IN-GAME)", 5763719, data)
+			print("Going to Namak until level 11 (IN-GAME)")
+			state = "GAME_LV_11"
+			continue = false
+
+			-- Checking Level (Namak, first step of kaitun)
+			Player.AttributeChanged:Connect(function(attribute)
+				if attribute ~= "Level" then
+					return
+				end
+
+				if Player:GetAttribute("Level") >= CONFIG.LEVEL.MINIMUM_LEVEL_TARGET then
+					WebhookManager.post(
+						"Reached level " .. CONFIG.LEVEL.MINIMUM_LEVEL_TARGET .. ", going back to lobby",
+						5763719,
+						data
+					)
+					teleportToPlace(CONFIG.PLACE_IDS.LOBBY)
+				end
+			end)
+		end
+
 		if not Game.hasEscanor() and continue then
 			-- Farming until Escanor (IN-GAME)
 			loadNousigi("DriedLakeSummon")
 			WebhookManager.post("Going to Dried Lake to farm Escanor (IN-GAME)", 5763719, data)
+			state = "GAME_ESCANOR"
 			continue = false
 
 			Player.AttributeChanged:Connect(function(attribute)
@@ -631,8 +662,16 @@ function start()
 				end
 
 				-- Goes back to lobby if weekend started and level is below target
-				if CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND and IsWeekend() and Player:GetAttribute("Level") < CONFIG.WEEKEND_LEVEL_TARGET then
-					WebhookManager.post("It's weekend and level is below " .. CONFIG.WEEKEND_LEVEL_TARGET .. ", going back to lobby", 5763719, data)
+				if
+					CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND
+					and IsWeekend()
+					and Player:GetAttribute("Level") < CONFIG.WEEKEND_LEVEL_TARGET
+				then
+					WebhookManager.post(
+						"It's weekend and level is below " .. CONFIG.WEEKEND_LEVEL_TARGET .. ", going back to lobby",
+						5763719,
+						data
+					)
 					teleportToLobby()
 					return
 				end
@@ -642,10 +681,11 @@ function start()
 
 	if isTimeChamber() then
 		WebhookManager.post("In Time Chamber, farming resources", 5763719, nil)
+		state = "TIME_CHAMBER"
 		-- Checking if the player has enough resources
 		Player.AttributeChanged:Connect(function(attribute)
 			print("[AttributeChanged] (TimeChamber):", attribute)
-			
+
 			if attribute ~= "IcedTea" then
 				return
 			end
@@ -667,3 +707,178 @@ function start()
 end
 
 start()
+
+-- Spreadsheet Handler
+task.spawn(function()
+	local ss = CONFIG.SPREADSHEET_REST_URL
+
+	local function get(url)
+		local options = {
+			Url = url,
+			Method = "GET",
+			Headers = {
+				["Content-Type"] = "application/json",
+				["X-Api-Key"] = CONFIG.API_KEY,
+			},
+		}
+
+		return request(options).Body
+	end
+
+	local function post(url, body: string)
+		local options = {
+			Url = url,
+			Method = "POST",
+			Headers = {
+				["Content-Type"] = "application/json",
+				["X-Api-Key"] = CONFIG.API_KEY,
+			},
+			Body = body,
+		}
+
+		return request(options).Body
+	end
+
+	local function patch(url, body: string)
+		local options = {
+			Url = url,
+			Method = "PATCH",
+			Headers = {
+				["Content-Type"] = "application/json",
+				["X-Api-Key"] = CONFIG.API_KEY,
+			},
+			Body = body,
+		}
+
+		return request(options).Body
+	end
+
+	local function isPlayerinSS(playerDataJson)
+		if #HTTP:JSONDecode(playerDataJson) <= 0 then
+			return false
+		else
+			return true
+		end
+	end
+
+	local function updateInfo(
+		grindState,
+		level,
+		rr,
+		icedtea,
+		flowers,
+		gold,
+		hasEscanor,
+		hasFalcon,
+		remainingRRSummer,
+		remainingRRSpring
+	)
+		print("Updating info to spreadsheet...")
+
+		local playerDataString = `{ss}/Username/*{Player.Name}*`
+		local playerDataJson = get(playerDataString)
+		print(playerDataJson)
+
+		local updatedInfo = {
+			Username = Player.Name,
+			Node = "VPS-1",
+			Grinding = grindState,
+			Level = level,
+			TraitRerolls = rr,
+			IcedTea = icedtea,
+			Flowers = flowers,
+			Gold = gold,
+			HasEscanor = hasEscanor or nil,
+			HasFalcon = hasFalcon or nil,
+			LeftSummerRR = remainingRRSummer or nil,
+			LeftSpringRR = remainingRRSpring or nil,
+			UPDATED = getBrazilianTimestamp(),
+		}
+
+		if isPlayerinSS(playerDataJson) then
+			print(patch(playerDataString, HTTP:JSONEncode(updatedInfo)))
+		else
+			print(post(ss, HTTP:JSONEncode(updatedInfo)))
+		end
+	end
+
+	while true do
+		print("Updating info...")
+
+		if isLobby() then
+			updateInfo(
+				state,
+				getAttribute("Level"),
+				getAttribute("TraitRerolls"),
+				getAttribute("IcedTea"),
+				getAttribute("Flowers"),
+				getAttribute("Gold"),
+				tostring(Lobby.hasEscanor()),
+				nil,
+				Lobby.getRemainingRRFromEventShop("SummerShop"),
+				Lobby.getRemainingRRFromEventShop("SpringShop")
+			)
+		end
+
+		if isGame() then
+			updateInfo(
+				state,
+				getAttribute("Level"),
+				getAttribute("TraitRerolls"),
+				getAttribute("IcedTea"),
+				getAttribute("Flowers"),
+				getAttribute("Gold"),
+				Game.hasEscanor()
+			)
+		end
+
+		if isTimeChamber() then
+			updateInfo(
+				state,
+				getAttribute("Level"),
+				getAttribute("TraitRerolls"),
+				getAttribute("IcedTea"),
+				getAttribute("Flowers"),
+				getAttribute("Gold")
+			)
+		end
+
+		task.wait(600)
+	end
+end)
+
+function getBrazilianTimestamp()
+    -- Obter data atual em UTC
+    local currentUTC = os.date("!*t", os.time())
+    
+    -- Ajustar para UTC-3 (Brasil)
+    currentUTC.hour = currentUTC.hour - 3
+    
+    -- Se a hora ficar negativa, ajustar para o dia anterior
+    if currentUTC.hour < 0 then
+        currentUTC.hour = currentUTC.hour + 24
+        currentUTC.day = currentUTC.day - 1
+        
+        -- Verificar se precisamos ajustar o mês/ano
+        if currentUTC.day == 0 then
+            currentUTC.month = currentUTC.month - 1
+            
+            -- Ajustar para dezembro do ano anterior
+            if currentUTC.month == 0 then
+                currentUTC.month = 12
+                currentUTC.year = currentUTC.year - 1
+            end
+            
+            -- Definir para o último dia do mês anterior
+            local daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
+            -- Verificar ano bissexto
+            if currentUTC.month == 2 and (currentUTC.year % 4 == 0 and (currentUTC.year % 100 ~= 0 or currentUTC.year % 400 == 0)) then
+                daysInMonth[2] = 29
+            end
+            currentUTC.day = daysInMonth[currentUTC.month]
+        end
+    end
+    
+    -- Converter a data ajustada de volta para timestamp
+    return os.time(currentUTC)
+end
