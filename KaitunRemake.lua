@@ -16,14 +16,14 @@ local CONFIG = getgenv().KaitunWiredConfig
 			TIME_CHAMBER = 18219125606,
 		},
 		NOUSIGI = {
-			KEY = getgenv().Key or "PMGAaZenDlLFmJBEcbhIbYSnmPIGnPLL",
+			KEY = getgenv().Key or "",
 			CONFIGS = {
 				NAMAK_LEVEL_FARM = "https://paste.dotwired.org/Namak.txt",
 				DRIED_LAKE = "https://paste.dotwired.org/Dried%20Lake.txt",
 			},
 		},
-		ERROR_WEBHOOK_URL = "https://discord.com/api/webhooks/1413456894978293760/x69F2siE7P-rFGl4xuZBCKXLGosUS9sukyPjy9ui1aGBmU-guuHG5CYU0J569dG6tLlf",
-		WEBHOOK_URL = "https://discord.com/api/webhooks/1411173677474648154/HW89L4WEq69UMOw_VFfWjvBDjGHtQbeym0Qg_ns-5PC0KRTETJd952jS253-BIwdOGA-",
+		WEBHOOK_URL = "https://discord.com/api/webhooks/1413475272316948500/iHTq99gxv-bX5v1c9JnorJMvWub3ihldMpgucvYREzRu8r-U1pp5B273UnuZjoYuBR5f",
+		ERROR_WEBHOOK_URL = "https://discord.com/api/webhooks/1413456894978293760/x69F2siE7P-rFGl4xuZBCKXLGosUS9sukyPjy9ui1aGBmU-guuHG5CYU0J569dG6tLlf"
 	}
 
 local CACHE = {
@@ -469,6 +469,7 @@ function start()
 			-- Going to namak until level 11 (LOBBY)
 			loadNousigi("NamakLevelFarm")
 			WebhookManager.post("Going to Namak until level 11 (LOBBY)", 1752220, data)
+			print("Going to Namak until level 11 (LOBBY)")
 			continue = false
 		end
 
@@ -476,6 +477,7 @@ function start()
 			-- Going to namak to farm Level (is weekend, priority)
 			loadNousigi("NamakLevelFarm")
 			WebhookManager.post("Going to Namak until level 50 (WEEKEND) (LOBBY)", 1752220, data)
+			print("Going to Namak until level 50 (WEEKEND) (LOBBY)")
 			continue = false
 		end
 
@@ -483,6 +485,7 @@ function start()
 			-- Farming until Escanor (LOBBY)
 			loadNousigi("DriedLakeSummon")
 			WebhookManager.post("Going to Dried Lake to farm Escanor (LOBBY)", 16705372, data)
+			print("Going to Dried Lake to farm Escanor (LOBBY)")
 			continue = false
 		end
 
@@ -523,6 +526,7 @@ function start()
 			-- Farming until level 11 (IN-GAME)
 			loadNousigi("NamakLevelFarm")
 			WebhookManager.post("Going to Namak until level 11 (IN-GAME)", 5763719, data)
+			print("Going to Namak until level 11 (IN-GAME)")
 			continue = false
 
 			-- Checking Level (Namak, first step of kaitun)
@@ -542,7 +546,9 @@ function start()
 			-- Farming until level 50 (IN-GAME)
 			loadNousigi("NamakLevelFarm")
 			WebhookManager.post("Going to Namak until level 50 (WEEKEND) (IN-GAME)", 5763719, data)
+			print("Going to Namak until level 50 (WEEKEND) (IN-GAME)")
 			continue = false
+
 
 			-- Checking level (weekend, farming til 50)
 			Player.AttributeChanged:Connect(function(attribute)
@@ -576,7 +582,7 @@ function start()
 				end
 
 				-- Goes back to lobby if weekend started and level is below target
-				if IsWeekend() and Player:GetAttribute("Level") < CONFIG.WEEKEND_LEVEL_TARGET then
+				if CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND and IsWeekend() and Player:GetAttribute("Level") < CONFIG.WEEKEND_LEVEL_TARGET then
 					WebhookManager.post("It's weekend and level is below " .. CONFIG.WEEKEND_LEVEL_TARGET .. ", going back to lobby", 5763719, data)
 					teleportToLobby()
 					return
