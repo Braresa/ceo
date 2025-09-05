@@ -605,7 +605,8 @@ function start()
 		-- Checking if the player has enough resources
 		Player.AttributeChanged:Connect(function(attribute)
 			print("[AttributeChanged] (TimeChamber):", attribute)
-			if attribute ~= "IcedTea" or attribute ~= "Flowers" then
+			
+			if attribute ~= "IcedTea" then
 				return
 			end
 
