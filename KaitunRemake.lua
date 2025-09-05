@@ -20,8 +20,8 @@ local CONFIG = getgenv().KaitunWiredConfig
 		},
 		WEBHOOK_URL = "https://discord.com/api/webhooks/1413475272316948500/iHTq99gxv-bX5v1c9JnorJMvWub3ihldMpgucvYREzRu8r-U1pp5B273UnuZjoYuBR5f",
 		ERROR_WEBHOOK_URL = "https://discord.com/api/webhooks/1413456894978293760/x69F2siE7P-rFGl4xuZBCKXLGosUS9sukyPjy9ui1aGBmU-guuHG5CYU0J569dG6tLlf",
-		SPREADSHEET_REST_URL = "https://api.sheetbest.com/sheets/3442746d-a5d6-4725-b3e1-d052725f4157",
-		API_KEY = "2mU-nRF50COA5IFzLUjMZ$Uvd3@1FW@PxsmFduisfD!T%rgg3cJicSISKC#BO7Sw",
+		SPREADSHEET_REST_URL = "",
+		API_KEY = "",
 	}
 
 local CACHE = {
