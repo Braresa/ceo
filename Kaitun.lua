@@ -480,16 +480,20 @@ if IsWeekend() and (30 - getLevel()) <= 10 and (getLevel() < 30) then
 	sendEmbed("(WEEKEND COM TOQUE) Farming until level " .. levelTarget)
 	loadstring(requestGet("https://nousigi.com/loader.lua"))()
 
-	while true do
-		if getLevel() >= 30 then
-			postWebhook("Player " .. player.Name .. " reached level 30, teleporting to lobby...")
-			game:GetService("TeleportService"):Teleport(16146832113, player)
-			break
-		end
-		task.wait(10)
-	end
 
-	return
+	task.spawn(function()
+		while true do
+			if getLevel() >= 30 then
+				postWebhook(
+					" Player **" .. player.Name .. "** reached level " .. getLevel() .. ", getting back to lobby..."
+				)
+				game:GetService("TeleportService"):Teleport(16146832113, game:GetService("Players").LocalPlayer)
+				break
+			end
+			task.wait(30)
+		end
+	end)
+
 end
 
 -- Stage 1: Level farming
@@ -497,14 +501,14 @@ if getLevel() < levelTarget then
 	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
 	sendEmbed("Farming until level " .. levelTarget)
 	-- Stage 2: Escanor farming
-elseif not hasEscanor() then
+elseif not hasEscanor() and not IsWeekend() then
 	loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 	sendEmbed("Farming until Escanor")
 	if not ignoreSummon then
 		getgenv().Config["Summoner"]["Auto Summon Summer"] = true
 	end
 	-- Last Stage: Farm and buy all RR
-else
+elseif not IsWeekend() then
 	if getStage() == "Summer" then
 		loadstring(requestGet("https://paste.dotwired.org/Dried%20Lake.txt"))()
 		getgenv().Config["Summoner"]["Auto Summon Summer"] = false
@@ -515,6 +519,9 @@ else
 		loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
 		sendEmbed("Farming Namak")
 	end
+elseif IsWeekend() then
+	loadstring(requestGet("https://paste.dotwired.org/Namak.txt"))()
+	sendEmbed("Farming until level " .. levelTarget .. " (WEEKEND COM TOQUE)")
 end
 
 if isLobby() and getLevel() >= levelTarget and hasEscanor() then
