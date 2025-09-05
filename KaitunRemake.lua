@@ -500,8 +500,8 @@ function start()
 		if CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND and IsWeekend() and (level < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET) and continue then
 			-- Going to namak to farm Level (is weekend, priority)
 			loadNousigi("NamakLevelFarm")
-			WebhookManager.post("Going to Namak until level 50 (WEEKEND) (LOBBY)", 1752220, data)
-			print("Going to Namak until level 50 (WEEKEND) (LOBBY)")
+			WebhookManager.post("Going to Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (LOBBY)", 1752220, data)
+			print("Going to Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (LOBBY)")
 			continue = false
 		end
 
@@ -572,8 +572,8 @@ function start()
 		if CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND and IsWeekend() and (level < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET) and continue then
 			-- Farming until level 50 (IN-GAME)
 			loadNousigi("NamakLevelFarm")
-			WebhookManager.post("Going to Namak until level 50 (WEEKEND) (IN-GAME)", 5763719, data)
-			print("Going to Namak until level 50 (WEEKEND) (IN-GAME)")
+			WebhookManager.post("Going to Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (IN-GAME)", 5763719, data)
+			print("Going to Namak until " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. " (WEEKEND) (IN-GAME)")
 			continue = false
 
 
