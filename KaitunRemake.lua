@@ -91,22 +91,22 @@ local WebhookManager = {
 			},
 			{
 				["name"] = "Has Escanor?",
-				["value"] = if data.hasEscanor then data.hasEscanor else "N/A",
+				["value"] = data.hasEscanor or "N/A",
 				["inline"] = true,
 			},
 			{
 				["name"] = "Game Stage",
-				["value"] = if data.stage then data.stage else "N/A",
+				["value"] = data.stage or "N/A",
 				["inline"] = true,
 			},
 			{
 				["name"] = "RR's",
-				["value"] = if getAttribute("TraitRerolls") then getAttribute("TraitRerolls") else "N/A",
+				["value"] = tostring(getAttribute("TraitRerolls")),
 				["inline"] = true,
 			},
 			{
 				["name"] = "Gems / Gold",
-				["value"] = `{if getAttribute("Gems") then getAttribute("Gems") else "N/A"} / {if getAttribute("Gold") then getAttribute("Gold") else "N/A"}`,
+				["value"] = `{getAttribute("Gems")} / {getAttribute("Gold")}`,
 				["inline"] = true,
 			},
 		}
@@ -601,7 +601,11 @@ function start()
 	end
 
 	if isTimeChamber() then
-		WebhookManager.post("In Time Chamber, farming resources", 12745742, nil)
+		local data = {
+			hasEscanor = "N/A",
+			stage = "Time Chamber",
+		}
+		WebhookManager.post("In Time Chamber, farming resources", 12745742, data)
 		-- Checking if the player has enough resources
 		Player.AttributeChanged:Connect(function(attribute)
 			print("[AttributeChanged] (TimeChamber):", attribute)
@@ -616,11 +620,11 @@ function start()
 					.. " / Flowers: "
 					.. tostring(Player:GetAttribute("Flowers")),
 				12745742,
-				nil
+				data
 			)
 
 			if (Player:GetAttribute("IcedTea") >= 300000) and (Player:GetAttribute("Flowers") >= 300000) then
-				WebhookManager.post("Has enough resources, going back to lobby", 5763719, nil, true)
+				WebhookManager.post("Has enough resources, going back to lobby", 5763719, data, true)
 				teleportToLobby()
 			end
 		end)
