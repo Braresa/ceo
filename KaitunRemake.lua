@@ -1,6 +1,3 @@
--- TODO
--- Sistema de detectar se é dobro de XP
--- Automaticamente fechar o alerta
 
 local CONFIG = getgenv().KaitunWiredConfig
 	or {
@@ -354,7 +351,7 @@ local Lobby = {
 		local UpdateLogEvent = ReplicatedStorage.Networking.UpdateLogEvent
 
 		if not pcall(UpdateLogHandler.CloseInterface) then
-			warn("Failed to close update log.")
+			warn("Failed to close update log. this is expected, its a local function duh")
 		end
 
 		UpdateLogEvent:FireServer("Update", true)
@@ -604,6 +601,7 @@ function start()
 	end
 
 	if isTimeChamber() then
+		WebhookManager.post("In Time Chamber, farming resources", 12745742, nil)
 		-- Checking if the player has enough resources
 		Player.AttributeChanged:Connect(function(attribute)
 			print("[AttributeChanged] (TimeChamber):", attribute)
