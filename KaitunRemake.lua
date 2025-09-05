@@ -349,6 +349,17 @@ local Lobby = {
 		end)
 	end,
 
+	CloseUpdateLog = function()
+		local UpdateLogHandler = require(game:GetService("StarterPlayer").Modules.Miscellaneous.UpdateLogHandler)
+		local UpdateLogEvent = ReplicatedStorage.Networking.UpdateLogEvent
+
+		if not pcall(UpdateLogHandler.CloseInterface) then
+			warn("Failed to close update log.")
+		end
+
+		UpdateLogEvent:FireServer("Update", true)
+	end,
+
 	buyAllRRFromEventShop = function(eventShop: string)
 		local args = {
 			"Purchase",
@@ -457,6 +468,7 @@ function start()
 	if isLobby() then
 		Lobby.ClaimLevelMilestones()
 		Lobby.CheckIfExpandUnits()
+		Lobby.CloseUpdateLog()
 		local data = {
 			hasEscanor = tostring(Lobby.hasEscanor()),
 			stage = "Lobby",
