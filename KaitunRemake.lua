@@ -844,7 +844,7 @@ task.spawn(function()
 			)
 		end
 
-		task.wait(3600) 
+		task.wait(7200) -- 2 hours
 	end
 end)
 
