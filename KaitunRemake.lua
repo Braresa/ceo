@@ -715,7 +715,7 @@ function start()
 					return
 				end
 
-				if (not IsWeekend and Player:GetAttribute("Level") >= CONFIG.LEVEL.MINIMUM_LEVEL_TARGET) or (IsWeekend and Player:GetAttribute("Level") >= CONFIG.LEVEL.WEEKEND_LEVEL_TARGET) then
+				if (not IsWeekend() and Player:GetAttribute("Level") >= CONFIG.LEVEL.MINIMUM_LEVEL_TARGET) or (IsWeekend()and Player:GetAttribute("Level") >= CONFIG.LEVEL.WEEKEND_LEVEL_TARGET) then
 					WebhookManager.post(
 						"Reached level " .. CONFIG.LEVEL.MINIMUM_LEVEL_TARGET .. ", going back to lobby",
 						5763719,
