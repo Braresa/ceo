@@ -263,7 +263,7 @@ function teleportToLobby()
 end
 
 function teleportToTimeChamber()
-	repeat TeleportService:Teleport(18219125606); task.wait(10) until game.PlaceId == 18219125606
+	teleportToPlace(CONFIG.PLACE_IDS.TIME_CHAMBER)
 end
 
 -- Lobby functions (works only on the lobby)
