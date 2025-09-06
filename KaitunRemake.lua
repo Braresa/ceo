@@ -39,7 +39,7 @@ local TeleportService = game:GetService("TeleportService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local RunService = game:GetService("RunService")
 
-local VERSION = 4
+local VERSION = 5
 
 local Player = Players.LocalPlayer
 
@@ -253,8 +253,8 @@ task.spawn(function()
 
 		if tostring(VERSION) ~= remoteVersion then
 			Player:Kick("Kaitun outdated.")
-
 			WebhookManager.message(`> *{Player.Name}* was kicked for having an outdated Kaitun version.`)
+			break
 		end
 
 		task.wait(120) -- Check every 2 minutes
