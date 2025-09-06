@@ -635,7 +635,7 @@ function start()
 		end
 
 		-- FOURTH STAGE (LAST IF SET SO)
-		if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 then
+		if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and continue then
 			if icedTea < 300000 then
 				loadNousigi("DriedLake")
 				WebhookManager.post("Going to Dried Lake to farm Iced Tea (LOBBY)", 16705372, data)
