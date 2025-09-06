@@ -375,6 +375,8 @@ local Lobby = {
 
 		for code in string.gmatch(codes, "[^\r\n]+") do
 			CodesHandler.Redeem(code)
+
+			task.wait(2)
 		end
 	end,
 
