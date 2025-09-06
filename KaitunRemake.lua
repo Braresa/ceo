@@ -295,6 +295,7 @@ end
 
 function teleportToTimeChamber()
 	-- teleportToPlace(CONFIG.PLACE_IDS.TIME_CHAMBER)
+	TeleportService:Teleport(CONFIG.PLACE_IDS.TIME_CHAMBER, Player)
 	WebhookManager.message(`> *{Player.Name}* is going to time chamber (teleport is broken ~20min).`)
 end
 
