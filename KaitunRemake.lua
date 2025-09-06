@@ -39,7 +39,7 @@ local TeleportService = game:GetService("TeleportService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local RunService = game:GetService("RunService")
 
-local VERSION = 2
+local VERSION = 3
 
 local Player = Players.LocalPlayer
 
@@ -384,6 +384,15 @@ local Lobby = {
 		end)
 	end,
 
+	ClaimCodes = function()
+		local CodesHandler = StarterPlayer.Modules.Interface.Loader.Windows.CodesHandler
+		local codes = game:HttpGet("https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/codes.txt")
+
+		for code in string.gmatch(codes, "[^\r\n]+") do
+			CodesHandler.Redeem(code)
+		end
+	end,
+
 	CloseUpdateLog = function()
 		-- Here we just disable the update log appearing every time we enter the lobby
 		-- The update log close function is local
@@ -570,6 +579,7 @@ function start()
 		Lobby.ClaimLevelMilestones()
 		Lobby.CheckIfExpandUnits()
 		Lobby.CloseUpdateLog()
+		Lobby.ClaimCodes()
 
 		Lobby.SetupEscanorEvent(function()
 			Lobby.UpdateSpreadsheet(
