@@ -378,11 +378,11 @@ local Lobby = {
 	end,
 
 	ClaimCodes = function()
-		local CodesHandler = StarterPlayer.Modules.Interface.Loader.Windows.CodesHandler
+		local CodesEvent = ReplicatedStorage.Networking.CodesEvent
 		local codes = game:HttpGet("https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/codes.txt")
 
 		for code in string.gmatch(codes, "[^\r\n]+") do
-			CodesHandler:Redeem(code)
+			CodesEvent:FireServer(code)
 
 			task.wait(2)
 		end
