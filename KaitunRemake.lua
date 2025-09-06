@@ -634,6 +634,11 @@ function start()
 				data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
 				data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
 				WebhookManager.post("Bought all RR from Spring Shop (LOBBY)", 5763719, data)
+			else
+				teleportToPlace(CONFIG.PLACE_IDS.TIME_CHAMBER)
+				WebhookManager.post("Going to Time Chamber to farm resources (LOBBY)", 15844367, data)
+				state = "LOBBY_TIME_CHAMBER"
+				continue = false
 			end
 		end
 
