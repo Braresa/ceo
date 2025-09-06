@@ -1,3 +1,4 @@
+
 local CONFIG = getgenv().KaitunWiredConfig
 	or {
 		LEVEL = {
