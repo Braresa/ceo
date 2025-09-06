@@ -27,6 +27,9 @@ local CONFIG = getgenv().KaitunWiredConfig
 local CACHE = {
 	hasEscanor = nil,
 }
+
+-- Version check
+
 -- Services
 
 local HTTP = game:GetService("HttpService")
@@ -36,7 +39,46 @@ local TeleportService = game:GetService("TeleportService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local RunService = game:GetService("RunService")
 
+local VERSION = 2
+
 local Player = Players.LocalPlayer
+
+-- Checking version
+task.spawn(function()
+	local versionUrl = "https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/version.txt"
+	local options = {
+		Url = versionUrl,
+		Method = "GET",
+	}
+	while true do
+		local remoteVersion = request(options)
+
+		if not remoteVersion.Sucess then
+			request({
+				Url = CONFIG.WEBHOOK_URL,
+				Method = "POST",
+				Body = HTTP:JSONEncode({
+					["content"] = `(*{Player.Name}*) An error ocurred retrieving Kaitun Remote Version: {remoteVersion.Body}`,
+				}),
+			})
+			return
+		end
+
+		if VERSION ~= remoteVersion.Body then
+			Player:Kick("Kaitun outdated.")
+
+			request({
+				Url = CONFIG.WEBHOOK_URL,
+				Method = "POST",
+				Body = HTTP:JSONEncode({
+					["content"] = `(*{Player.Name}*) Kaitun is outdated. Current: {VERSION}, Remote: {remoteVersion.Body}`,
+				}),
+			})
+		end
+
+		task.wait(60)
+	end
+end)
 
 -- Core game functions (works on any place)
 
@@ -225,6 +267,16 @@ local WebhookManager = {
 			Headers = { ["Content-Type"] = "application/json" },
 		})
 	end,
+
+	message = function(message)
+		local options = {
+			Url = CONFIG.WEBHOOK_URL,
+			Method = "POST",
+			Body = HTTP:JSONEncode({ content = message }),
+			Headers = { ["Content-Type"] = "application/json" },
+		}
+		return request(options)
+	end,
 }
 
 --[[
@@ -241,36 +293,16 @@ function IsWeekend(): boolean
 	return WeekendHandler_upvr.IsWeekend()
 end
 
-local function teleportToPlace(placeId)
-	local attempts = 10
-
-	while attempts > 0 do
-		attempts = attempts - 1
-		local ok, err = pcall(function()
-			TeleportService:Teleport(placeId)
-		end)
-		if ok then
-			break
-		else
-			WebhookManager.error(
-				"Failed to teleport to placeId "
-					.. tostring(placeId)
-					.. " for player "
-					.. Player.Name
-					.. ": "
-					.. tostring(err)
-			)
-			task.wait(8)
-		end
-	end
-end
-
 function teleportToLobby()
-	teleportToPlace(CONFIG.PLACE_IDS.LOBBY)
+	-- For some reason teleport doesn't work properly, we are kicking the player instead.
+	-- teleportToPlace(CONFIG.PLACE_IDS.LOBBY)
+	Player:Kick("Returning to lobby.")
+	WebhookManager.message(`> *{Player.Name}* is returning to lobby.`)
 end
 
 function teleportToTimeChamber()
-	teleportToPlace(CONFIG.PLACE_IDS.TIME_CHAMBER)
+	-- teleportToPlace(CONFIG.PLACE_IDS.TIME_CHAMBER)
+	WebhookManager.message(`> *{Player.Name}* is going to time chamber (teleport is broken ~20min).`)
 end
 
 -- Lobby functions (works only on the lobby)
@@ -341,16 +373,9 @@ local Lobby = {
 
 				if maxUnits - currentUnits <= 10 then
 					if getAttribute("Gold") < (timesBought * 15000 + 25000) then
-						WebhookManager.warn(Player.Name .. " doesn't have enough gold to expand unit capacity!")
+						WebhookManager.warn(`> *{Player.Name}* doesn't have enough gold to expand unit capacity!`)
 					else
-						WebhookManager.post(
-							"Player "
-								.. Player.Name
-								.. " is expanding unit capacity from "
-								.. maxUnits
-								.. " to "
-								.. (maxUnits + 25)
-						)
+						WebhookManager.message(`> *{Player.Name}* is expanding unit capacity`)
 						UnitExpansionEvent:FireServer("Purchase")
 					end
 				end
@@ -360,12 +385,9 @@ local Lobby = {
 	end,
 
 	CloseUpdateLog = function()
-		local UpdateLogHandler = require(game:GetService("StarterPlayer").Modules.Miscellaneous.UpdateLogHandler)
+		-- Here we just disable the update log appearing every time we enter the lobby
+		-- The update log close function is local
 		local UpdateLogEvent = ReplicatedStorage.Networking.UpdateLogEvent
-
-		if not pcall(UpdateLogHandler.CloseInterface) then
-			warn("Failed to close update log. this is expected, its a local function duh")
-		end
 
 		UpdateLogEvent:FireServer("Update", true)
 	end,
@@ -393,9 +415,6 @@ local Lobby = {
 	end,
 
 	UpdateSpreadsheet = function(hasEscanor, summerRR, springRR)
-		if CONFIG.SPREADSHEET_REST_URL == "" or CONFIG.API_KEY == "" then
-			return
-		end
 		local playerDataString = `{CONFIG.SPREADSHEET_REST_URL}/Username/*{Player.Name}*`
 		local playerDataJson = game:HttpGet(playerDataString)
 
@@ -435,7 +454,9 @@ local Lobby = {
 		if response and response.Success then
 			print("Successfully updated spreadsheet.")
 		else
-			WebhookManager.warn("Failed to update spreadsheet.")
+			WebhookManager.warn(
+				`> *{Player.Name}* failed to update spreadsheet: {response and response.Body or "No response"}`
+			)
 		end
 	end,
 
@@ -464,7 +485,7 @@ local Lobby = {
 		return CACHE.hasEscanor
 	end,
 
-	SetupEscanorEvent = function(callback)
+	SetupEscanorEvent = function(callback: () -> any...)
 		local SummonEvent = game:GetService("ReplicatedStorage").Networking.Units.SummonEvent
 
 		SummonEvent.OnClientEvent:Connect(function(action, units)
@@ -568,6 +589,7 @@ function start()
 
 		local continue = true
 
+		-- First stage -> WEEKEND_LEVEL_FARM
 		if
 			CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND
 			and IsWeekend()
@@ -586,6 +608,7 @@ function start()
 			continue = false
 		end
 
+		-- Second stage -> MINIMUM_LEVEL_FARM
 		if level < CONFIG.LEVEL.MINIMUM_LEVEL_TARGET and continue then
 			-- Going to namak until level 11 (LOBBY)
 			loadNousigi("NamakLevelFarm")
@@ -595,16 +618,16 @@ function start()
 			continue = false
 		end
 
+		-- Third stage -> LOBBY_ESCANOR
 		if not Lobby.hasEscanor() and continue then
 			-- Farming until Escanor (LOBBY)
 			loadNousigi("DriedLakeSummon")
 			WebhookManager.post("Going to Dried Lake to farm Escanor (LOBBY)", 16705372, data)
 			state = "LOBBY_ESCANOR"
-			print("Going to Dried Lake to farm Escanor (LOBBY)")
 			continue = false
 		end
 
-		-- Has escanor, has sufficient level, next step is RR
+		-- Fourth stage -> LOBBY_BUY_RR
 		if
 			(Lobby.getRemainingRRFromEventShop("SummerShop") == 200)
 			and (Lobby.getRemainingRRFromEventShop("SpringShop") == 200)
@@ -620,7 +643,6 @@ function start()
 			else
 				-- Not enough resources, going to timechamber
 				teleportToTimeChamber()
-				WebhookManager.post("Going to Time Chamber to farm resources (LOBBY)", 15844367, data)
 				state = "LOBBY_TIME_CHAMBER"
 				continue = false
 			end
@@ -635,13 +657,14 @@ function start()
 				data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
 				WebhookManager.post("Bought all RR from Spring Shop (LOBBY)", 5763719, data)
 			else
+
 				teleportToTimeChamber()
-				WebhookManager.post("Going to Time Chamber to farm resources (LOBBY)", 15844367, data)
 				state = "LOBBY_TIME_CHAMBER"
 				continue = false
 			end
 		end
 
+		-- Fifth stage -> COMPLETED
 		if continue then
 			data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
 			data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
@@ -658,6 +681,7 @@ function start()
 			stage = Game.getStage(),
 		}
 
+		-- First stage -> WEEKEND_LEVEL_FARM
 		if IsWeekend() and (level < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET) and continue then
 			-- Farming until level 50 (IN-GAME)
 			loadNousigi("NamakLevelFarm")
@@ -701,6 +725,7 @@ function start()
 			end)
 		end
 
+		-- Second stage -> MINIMUM_LEVEL_FARM
 		if level < CONFIG.LEVEL.MINIMUM_LEVEL_TARGET and continue then
 			-- Farming until level 11 (IN-GAME)
 			loadNousigi("NamakLevelFarm")
@@ -719,11 +744,6 @@ function start()
 					(not IsWeekend() and Player:GetAttribute("Level") >= CONFIG.LEVEL.MINIMUM_LEVEL_TARGET)
 					or (IsWeekend() and Player:GetAttribute("Level") >= CONFIG.LEVEL.WEEKEND_LEVEL_TARGET)
 				then
-					WebhookManager.post(
-						"Reached level " .. CONFIG.LEVEL.MINIMUM_LEVEL_TARGET .. ", going back to lobby",
-						5763719,
-						data
-					)
 					teleportToLobby()
 				end
 			end)
@@ -741,9 +761,19 @@ function start()
 					return
 				end
 
+				if getAttribute("Level") < CONFIG.LEVEL.MINIMUM_LEVEL_TARGET then
+					WebhookManager.message(
+						`> *({Player.Name})* Level is below {CONFIG.LEVEL.MINIMUM_LEVEL_TARGET} but is farming escanor? going back to lobby!`
+					)
+					teleportToLobby()
+					return
+				end
+
 				-- Iced tea Check
 				if Player:GetAttribute("IcedTea") >= CONFIG.ICED_TEA_TO_SUMMON then
-					WebhookManager.post("Has enough iced tea to summon escanor, going back to lobby", 5763719, data)
+					WebhookManager.message(
+						`> *({Player.Name})* has {getAttribute("IcedTea")} Iced Tea, going back to lobby to summon Escanor!`
+					)
 					teleportToLobby()
 					return
 				end
@@ -754,12 +784,8 @@ function start()
 					and IsWeekend()
 					and Player:GetAttribute("Level") < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET
 				then
-					WebhookManager.post(
-						"It's weekend and level is below "
-							.. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET
-							.. ", going back to lobby",
-						5763719,
-						data
+					WebhookManager.message(
+						`> *({Player.Name})* It's now weekend and level is below {CONFIG.LEVEL.WEEKEND_LEVEL_TARGET}, going back to lobby!`
 					)
 					teleportToLobby()
 					return
@@ -769,7 +795,7 @@ function start()
 	end
 
 	if isTimeChamber() then
-		WebhookManager.post("In Time Chamber, farming resources", 5763719, nil)
+		WebhookManager.post("TIME CHAMBER", 5763719, nil)
 		state = "TIME_CHAMBER"
 		-- Checking if the player has enough resources
 		Player.AttributeChanged:Connect(function(attribute)
@@ -779,16 +805,57 @@ function start()
 				return
 			end
 
-			WebhookManager.post(
-				"Current resources: Iced Tea: "
-					.. tostring(Player:GetAttribute("IcedTea"))
-					.. " / Flowers: "
-					.. tostring(Player:GetAttribute("Flowers")),
-				12745742
-			)
+			-- Sending status
+			local options = {
+				Url = CONFIG.WEBHOOK_URL,
+				Method = "POST",
+				Body = HTTP:JSONEncode({
+					["embeds"] = {
+						{
+							["title"] = "TIME CHAMBER",
+							["description"] = "Farming Iced Tea and Flowers, last stage boys!",
+							["color"] = 65280,
+							["fields"] = {
+								{
+									["name"] = "Username",
+									["value"] = Player.Name,
+									["inline"] = false,
+								},
+								{
+									["name"] = "Level",
+									["value"] = tostring(getAttribute("Level")),
+									["inline"] = true,
+								},
+								{
+									["name"] = "Iced Tea",
+									["value"] = tostring(getAttribute("IcedTea")),
+									["inline"] = true,
+								},
+								{
+									["name"] = "Flower",
+									["value"] = tostring(getAttribute("Flowers")),
+									["inline"] = true,
+								},
+								{
+									["name"] = "RR's",
+									["value"] = tostring(getAttribute("TraitRerolls")),
+									["inline"] = true,
+								},
+								{
+									["name"] = "Gems / Gold",
+									["value"] = `{getAttribute("Gems")} / {getAttribute("Gold")}`,
+									["inline"] = true,
+								},
+							},
+						},
+					},
+				}),
+			}
 
-			if (Player:GetAttribute("IcedTea") >= 300000) and (Player:GetAttribute("Flowers") >= 300000) then
-				WebhookManager.post("Has enough resources, going back to lobby", 5763719, nil, true)
+			request(options)
+
+			if (getAttribute("IcedTea") >= 300000) and (getAttribute("Flowers") >= 300000) then
+				WebhookManager.message(`> *{Player.Name}* has enough Iced Tea and Flowers, going back to lobby!`)
 				teleportToLobby()
 			end
 		end)
