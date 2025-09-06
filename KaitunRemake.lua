@@ -245,6 +245,7 @@ local WebhookManager = {
 	end,
 }
 
+--[[
 task.spawn(function()
 	local versionUrl = "https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/version.txt"
 
@@ -261,6 +262,7 @@ task.spawn(function()
 		task.wait(120) -- Check every 2 minutes
 	end
 end)
+]]
 
 --[[
 -> IcedTea
