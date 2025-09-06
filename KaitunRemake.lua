@@ -565,7 +565,7 @@ function start()
 			summerRR = Lobby.getRemainingRRFromEventShop("SummerShop"),
 			winterRR = Lobby.getRemainingRRFromEventShop("SpringShop"),
 		}
-		
+
 		local continue = true
 
 		if
@@ -922,7 +922,7 @@ task.spawn(function()
 			)
 		end
 
-		task.wait(7200) -- 2 hours
+		task.wait(14400) -- 4 hours
 	end
 end)
 
