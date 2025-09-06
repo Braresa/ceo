@@ -424,11 +424,11 @@ local Lobby = {
 			IcedTea = getAttribute("IcedTea"),
 			TraitRerolls = getAttribute("TraitRerolls"),
 			Flowers = getAttribute("Flowers"),
-			Gold = getAttribute("Gold"),
-			Gems = getAttribute("Gems"),
+			["Gems / Gold"] = `{getAttribute("Gems")} / {getAttribute("Gold")}`,
 			HasEscanor = tostring(hasEscanor),
 			LeftSummerRR = summerRR,
 			LeftSpringRR = springRR,
+			HasFalcon = "N/A"
 		}
 
 		local body = HTTP:JSONEncode(data)
@@ -444,7 +444,7 @@ local Lobby = {
 			})
 		else
 			response = request({
-				Url = playerDataString,
+				Url = CONFIG.SPREADSHEET_REST_URL,
 				Method = "POST",
 				Body = body,
 				Headers = { ["Content-Type"] = "application/json" },
@@ -452,7 +452,7 @@ local Lobby = {
 		end
 
 		if response and response.Success then
-			print("Successfully updated spreadsheet.")
+			WebhookManager.message(`> *{Player.Name}* updated spreadsheet successfully (LOBBY).`)
 		else
 			WebhookManager.warn(
 				`> *{Player.Name}* failed to update spreadsheet: {response and response.Body or "No response"}`
@@ -700,7 +700,7 @@ function start()
 					return
 				end
 
-				if Player:GetAttribute("Level") >= CONFIG.LEVEL.WEEKEND_LEVEL_TARGET then
+				if getAttribute("Level") >= CONFIG.LEVEL.WEEKEND_LEVEL_TARGET then
 					WebhookManager.post(
 						"Reached level " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. ", going back to lobby",
 						5763719,
@@ -741,8 +741,8 @@ function start()
 				end
 
 				if
-					(not IsWeekend() and Player:GetAttribute("Level") >= CONFIG.LEVEL.MINIMUM_LEVEL_TARGET)
-					or (IsWeekend() and Player:GetAttribute("Level") >= CONFIG.LEVEL.WEEKEND_LEVEL_TARGET)
+					(not IsWeekend() and getAttribute("Level") >= CONFIG.LEVEL.MINIMUM_LEVEL_TARGET)
+					or (IsWeekend() and getAttribute("Level") >= CONFIG.LEVEL.WEEKEND_LEVEL_TARGET)
 				then
 					teleportToLobby()
 				end
@@ -770,7 +770,7 @@ function start()
 				end
 
 				-- Iced tea Check
-				if Player:GetAttribute("IcedTea") >= CONFIG.ICED_TEA_TO_SUMMON then
+				if getAttribute("IcedTea") >= CONFIG.ICED_TEA_TO_SUMMON then
 					WebhookManager.message(
 						`> *({Player.Name})* has {getAttribute("IcedTea")} Iced Tea, going back to lobby to summon Escanor!`
 					)
@@ -782,7 +782,7 @@ function start()
 				if
 					CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND
 					and IsWeekend()
-					and Player:GetAttribute("Level") < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET
+					and getAttribute("Level") < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET
 				then
 					WebhookManager.message(
 						`> *({Player.Name})* It's now weekend and level is below {CONFIG.LEVEL.WEEKEND_LEVEL_TARGET}, going back to lobby!`
@@ -923,7 +923,7 @@ task.spawn(function()
 		rr,
 		icedtea,
 		flowers,
-		gold,
+		currency,
 		hasEscanor,
 		hasFalcon,
 		remainingRRSummer,
@@ -943,7 +943,7 @@ task.spawn(function()
 			TraitRerolls = rr,
 			IcedTea = icedtea,
 			Flowers = flowers,
-			Gold = gold,
+			["Gems / Gold"] = currency,
 			HasEscanor = hasEscanor or nil,
 			HasFalcon = hasFalcon or nil,
 			LeftSummerRR = remainingRRSummer or nil,
@@ -968,9 +968,9 @@ task.spawn(function()
 				getAttribute("TraitRerolls"),
 				getAttribute("IcedTea"),
 				getAttribute("Flowers"),
-				getAttribute("Gold"),
+				`{getAttribute("Gems")} / {getAttribute("Gold")}`,
 				tostring(Lobby.hasEscanor()),
-				nil,
+				"N/A",
 				Lobby.getRemainingRRFromEventShop("SummerShop"),
 				Lobby.getRemainingRRFromEventShop("SpringShop")
 			)
@@ -983,8 +983,9 @@ task.spawn(function()
 				getAttribute("TraitRerolls"),
 				getAttribute("IcedTea"),
 				getAttribute("Flowers"),
-				getAttribute("Gold"),
-				Game.hasEscanor()
+				`{getAttribute("Gems")} / {getAttribute("Gold")}`,
+				Game.hasEscanor(),
+				"N/A"
 			)
 		end
 
@@ -995,8 +996,9 @@ task.spawn(function()
 				getAttribute("TraitRerolls"),
 				getAttribute("IcedTea"),
 				getAttribute("Flowers"),
-				getAttribute("Gold")
+				`{getAttribute("Gems")} / {getAttribute("Gold")}`
 			)
+
 			break
 		end
 
