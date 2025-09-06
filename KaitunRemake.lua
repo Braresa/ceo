@@ -245,24 +245,32 @@ local WebhookManager = {
 	end,
 }
 
---[[
+
 task.spawn(function()
 	local versionUrl = "https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/version.txt"
-
 	while true do
-		local remoteVersion = game:HttpGet(versionUrl)
-		WebhookManager.message(`> *{Player.Name}* version check: local {VERSION}, remote {remoteVersion}`)
+		local attempts = 0
+		local maxAttempts = 3
 
-		if VERSION ~= remoteVersion then
-			WebhookManager.message(`> *{Player.Name}* was kicked for having an outdated Kaitun version.`)
-			Player:Kick("Kaitun outdated.")
-			break
+		while attempts < maxAttempts do
+			local remoteVersion = game:HttpGet(versionUrl)
+
+			if VERSION ~= remoteVersion then
+				attempts += 1
+				WebhookManager.message(`> *{Player.Name}* has outdated Kaitun version. Attempt {attempts}/{maxAttempts}.`)
+				if attempts >= maxAttempts then
+					WebhookManager.message(`> *{Player.Name}* was kicked for having an outdated Kaitun version.`)
+					Player:Kick("Kaitun outdated.")
+					return
+				end
+			else
+				attempts = 0 -- reset attempts if version matches
+			end
+
+			task.wait(120) -- Check every 2 minutes
 		end
-
-		task.wait(120) -- Check every 2 minutes
 	end
 end)
-]]
 
 --[[
 -> IcedTea
@@ -374,7 +382,7 @@ local Lobby = {
 		local codes = game:HttpGet("https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/codes.txt")
 
 		for code in string.gmatch(codes, "[^\r\n]+") do
-			CodesHandler.Redeem(code)
+			CodesHandler:Redeem(code)
 
 			task.wait(2)
 		end
