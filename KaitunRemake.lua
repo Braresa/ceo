@@ -242,35 +242,28 @@ function IsWeekend(): boolean
 end
 
 local function teleportToPlace(placeId)
-	local success = false
-	local attempts = 0
+	local attempts = 10
 
-	while attempts < 3 do
-		attempts = attempts + 1
+	while attempts > 0 do
+		attempts = attempts - 1
 		local ok, err = pcall(function()
-			TeleportService:Teleport(placeId, Player)
+			TeleportService:Teleport(placeId)
 		end)
 		if ok then
-			success = true
 			break
 		else
-			if debug then
-				WebhookManager.error("Teleport attempt " .. attempts .. " failed: " .. tostring(err))
-			end
+			WebhookManager.error("Failed to teleport to placeId " .. tostring(placeId) .. " for player " .. Player.Name .. ": " .. tostring(err))
 			task.wait(8)
 		end
-	end
-
-	if not success then
-		WebhookManager.post(
-			"Failed to teleport to placeId " .. tostring(placeId) .. " after 3 attempts. Kicking player."
-		)
-		Player:Kick("Failed to teleport to placeId " .. tostring(placeId) .. ".")
 	end
 end
 
 function teleportToLobby()
 	teleportToPlace(CONFIG.PLACE_IDS.LOBBY)
+end
+
+function teleportToTimeChamber()
+	repeat TeleportService:Teleport(18219125606); task.wait(10) until game.PlaceId == 18219125606
 end
 
 -- Lobby functions (works only on the lobby)
@@ -619,7 +612,7 @@ function start()
 				WebhookManager.post("Bought all RR from event shops (LOBBY)", 5763719, data)
 			else
 				-- Not enough resources, going to timechamber
-				teleportToPlace(CONFIG.PLACE_IDS.TIME_CHAMBER)
+				teleportToTimeChamber()
 				WebhookManager.post("Going to Time Chamber to farm resources (LOBBY)", 15844367, data)
 				state = "LOBBY_TIME_CHAMBER"
 				continue = false
@@ -635,7 +628,7 @@ function start()
 				data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
 				WebhookManager.post("Bought all RR from Spring Shop (LOBBY)", 5763719, data)
 			else
-				teleportToPlace(CONFIG.PLACE_IDS.TIME_CHAMBER)
+				teleportToTimeChamber()
 				WebhookManager.post("Going to Time Chamber to farm resources (LOBBY)", 15844367, data)
 				state = "LOBBY_TIME_CHAMBER"
 				continue = false
@@ -721,7 +714,7 @@ function start()
 						5763719,
 						data
 					)
-					teleportToPlace(CONFIG.PLACE_IDS.LOBBY)
+					teleportToLobby()
 				end
 			end)
 		end
