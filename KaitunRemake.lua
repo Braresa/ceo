@@ -44,41 +44,7 @@ local VERSION = 3
 local Player = Players.LocalPlayer
 
 -- Checking version
-task.spawn(function()
-	local versionUrl = "https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/version.txt"
-	local options = {
-		Url = versionUrl,
-		Method = "GET",
-	}
-	while true do
-		local remoteVersion = request(options)
 
-		if not remoteVersion.Sucess then
-			request({
-				Url = CONFIG.WEBHOOK_URL,
-				Method = "POST",
-				Body = HTTP:JSONEncode({
-					["content"] = `(*{Player.Name}*) An error ocurred retrieving Kaitun Remote Version: {remoteVersion.Body}`,
-				}),
-			})
-			return
-		end
-
-		if VERSION ~= remoteVersion.Body then
-			Player:Kick("Kaitun outdated.")
-
-			request({
-				Url = CONFIG.WEBHOOK_URL,
-				Method = "POST",
-				Body = HTTP:JSONEncode({
-					["content"] = `(*{Player.Name}*) Kaitun is outdated. Current: {VERSION}, Remote: {remoteVersion.Body}`,
-				}),
-			})
-		end
-
-		task.wait(Random.new():NextInteger(60, 180)) -- Check every 1 to 3 minutes
-	end
-end)
 
 -- Core game functions (works on any place)
 
@@ -278,6 +244,22 @@ local WebhookManager = {
 		return request(options)
 	end,
 }
+
+task.spawn(function()
+	local versionUrl = "https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/version.txt"
+
+	while true do
+		local remoteVersion = game:HttpGet(versionUrl)
+
+		if VERSION ~= remoteVersion then
+			Player:Kick("Kaitun outdated.")
+
+			WebhookManager.message(`> *{Player.Name}* was kicked for having an outdated Kaitun version.`)
+		end
+
+		task.wait(120) -- Check every 2 minutes
+	end
+end)
 
 --[[
 -> IcedTea
