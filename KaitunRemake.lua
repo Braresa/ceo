@@ -1,4 +1,3 @@
-
 local CONFIG = getgenv().KaitunWiredConfig
 	or {
 		LEVEL = {
@@ -393,6 +392,53 @@ local Lobby = {
 		end
 	end,
 
+	UpdateSpreadsheet = function(hasEscanor, summerRR, springRR)
+		if CONFIG.SPREADSHEET_REST_URL == "" or CONFIG.API_KEY == "" then
+			return
+		end
+		local playerDataString = `{CONFIG.SPREADSHEET_REST_URL}/Username/*{Player.Name}*`
+		local playerDataJson = game:HttpGet(playerDataString)
+
+		local data = {
+			Username = Player.Name,
+			Level = getAttribute("Level"),
+			IcedTea = getAttribute("IcedTea"),
+			TraitRerolls = getAttribute("TraitRerolls"),
+			Flowers = getAttribute("Flowers"),
+			Gold = getAttribute("Gold"),
+			Gems = getAttribute("Gems"),
+			HasEscanor = tostring(hasEscanor),
+			LeftSummerRR = summerRR,
+			LeftSpringRR = springRR,
+		}
+
+		local body = HTTP:JSONEncode(data)
+
+		local response
+
+		if #playerDataJson > 0 then
+			response = request({
+				Url = playerDataString,
+				Method = "PATCH",
+				Body = body,
+				Headers = { ["Content-Type"] = "application/json" },
+			})
+		else
+			response = request({
+				Url = playerDataString,
+				Method = "POST",
+				Body = body,
+				Headers = { ["Content-Type"] = "application/json" },
+			})
+		end
+
+		if response and response.Success then
+			print("Successfully updated spreadsheet.")
+		else
+			WebhookManager.warn("Failed to update spreadsheet.")
+		end
+	end,
+
 	hasEscanor = function()
 		if CACHE.hasEscanor ~= nil then
 			return CACHE.hasEscanor
@@ -416,6 +462,27 @@ local Lobby = {
 
 		CACHE.hasEscanor = false
 		return CACHE.hasEscanor
+	end,
+
+	SetupEscanorEvent = function(callback)
+		local SummonEvent = game:GetService("ReplicatedStorage").Networking.Units.SummonEvent
+
+		SummonEvent.OnClientEvent:Connect(function(action, units)
+			if action == "SummonTenAnimation" then
+				for i, unit in units do
+					local identifier = unit.UnitObject.Identifier
+					if identifier == 270 then
+						callback()
+					end
+				end
+			elseif action == "SummonOneAnimation" then
+				local unit = units
+				local identifier = unit.UnitObject.Identifier
+				if identifier == 270 then
+					callback()
+				end
+			end
+		end)
 	end,
 }
 
@@ -482,12 +549,23 @@ function start()
 		Lobby.ClaimLevelMilestones()
 		Lobby.CheckIfExpandUnits()
 		Lobby.CloseUpdateLog()
+
+		Lobby.SetupEscanorEvent(function()
+			Lobby.UpdateSpreadsheet(
+				true,
+				Lobby.getRemainingRRFromEventShop("SummerShop"),
+				Lobby.getRemainingRRFromEventShop("SpringShop")
+			)
+			WebhookManager.post("Got Escanor!", 7419530, { stage = "Lobby", hasEscanor = true }, true)
+		end)
+
 		local data = {
 			hasEscanor = tostring(Lobby.hasEscanor()),
 			stage = "Lobby",
 			summerRR = Lobby.getRemainingRRFromEventShop("SummerShop"),
 			winterRR = Lobby.getRemainingRRFromEventShop("SpringShop"),
 		}
+		
 		local continue = true
 
 		if
@@ -849,37 +927,40 @@ task.spawn(function()
 end)
 
 function getBrazilianTimestamp()
-    -- Obter data atual em UTC
-    local currentUTC = os.date("!*t", os.time())
-    
-    -- Ajustar para UTC-3 (Brasil)
-    currentUTC.hour = currentUTC.hour - 3
-    
-    -- Se a hora ficar negativa, ajustar para o dia anterior
-    if currentUTC.hour < 0 then
-        currentUTC.hour = currentUTC.hour + 24
-        currentUTC.day = currentUTC.day - 1
-        
-        -- Verificar se precisamos ajustar o mês/ano
-        if currentUTC.day == 0 then
-            currentUTC.month = currentUTC.month - 1
-            
-            -- Ajustar para dezembro do ano anterior
-            if currentUTC.month == 0 then
-                currentUTC.month = 12
-                currentUTC.year = currentUTC.year - 1
-            end
-            
-            -- Definir para o último dia do mês anterior
-            local daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
-            -- Verificar ano bissexto
-            if currentUTC.month == 2 and (currentUTC.year % 4 == 0 and (currentUTC.year % 100 ~= 0 or currentUTC.year % 400 == 0)) then
-                daysInMonth[2] = 29
-            end
-            currentUTC.day = daysInMonth[currentUTC.month]
-        end
-    end
-    
-    -- Converter a data ajustada de volta para timestamp
-    return os.time(currentUTC)
+	-- Obter data atual em UTC
+	local currentUTC = os.date("!*t", os.time())
+
+	-- Ajustar para UTC-3 (Brasil)
+	currentUTC.hour = currentUTC.hour - 3
+
+	-- Se a hora ficar negativa, ajustar para o dia anterior
+	if currentUTC.hour < 0 then
+		currentUTC.hour = currentUTC.hour + 24
+		currentUTC.day = currentUTC.day - 1
+
+		-- Verificar se precisamos ajustar o mês/ano
+		if currentUTC.day == 0 then
+			currentUTC.month = currentUTC.month - 1
+
+			-- Ajustar para dezembro do ano anterior
+			if currentUTC.month == 0 then
+				currentUTC.month = 12
+				currentUTC.year = currentUTC.year - 1
+			end
+
+			-- Definir para o último dia do mês anterior
+			local daysInMonth = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+			-- Verificar ano bissexto
+			if
+				currentUTC.month == 2
+				and (currentUTC.year % 4 == 0 and (currentUTC.year % 100 ~= 0 or currentUTC.year % 400 == 0))
+			then
+				daysInMonth[2] = 29
+			end
+			currentUTC.day = daysInMonth[currentUTC.month]
+		end
+	end
+
+	-- Converter a data ajustada de volta para timestamp
+	return os.time(currentUTC)
 end
