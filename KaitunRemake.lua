@@ -472,7 +472,7 @@ function start()
 			getgenv().Config["Summoner"]["Auto Summon Summer"] = true
 		end
 		getgenv().Key = CONFIG.NOUSIGI.KEY
-		-- loadstring(game:HttpGet("https://nousigi.com/loader.lua"))()
+		loadstring(game:HttpGet("https://nousigi.com/loader.lua"))()
 		print("Loaded Nousigi with config: " .. config)
 	end
 
