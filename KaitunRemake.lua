@@ -6,6 +6,7 @@ local CONFIG = getgenv().KaitunWiredConfig
 			ONLY_FARM_LEVEL_ON_WEEKEND = true,
 		},
 		ICED_TEA_TO_SUMMON = 400000,
+		FARM_SPRING_RR = false,
 		PLACE_IDS = {
 			LOBBY = 16146832113,
 			INGAME = 16277809958,
@@ -44,7 +45,6 @@ local VERSION = "6"
 local Player = Players.LocalPlayer
 
 -- Checking version
-
 
 -- Core game functions (works on any place)
 
@@ -245,7 +245,6 @@ local WebhookManager = {
 	end,
 }
 
-
 task.spawn(function()
 	local versionUrl = "https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/version.txt"
 	while true do
@@ -257,7 +256,9 @@ task.spawn(function()
 
 			if VERSION ~= remoteVersion then
 				attempts += 1
-				WebhookManager.message(`> *{Player.Name}* has outdated Kaitun version. Attempt {attempts}/{maxAttempts}.`)
+				WebhookManager.message(
+					`> *{Player.Name}* has outdated Kaitun version. Attempt {attempts}/{maxAttempts}.`
+				)
 				if attempts >= maxAttempts then
 					WebhookManager.message(`> *{Player.Name}* was kicked for having an outdated Kaitun version.`)
 					Player:Kick("Kaitun outdated.")
@@ -433,7 +434,7 @@ local Lobby = {
 			HasEscanor = tostring(hasEscanor),
 			LeftSummerRR = summerRR,
 			LeftSpringRR = springRR,
-			HasFalcon = "N/A"
+			HasFalcon = "N/A",
 		}
 
 		local body = HTTP:JSONEncode(data)
@@ -633,28 +634,27 @@ function start()
 			continue = false
 		end
 
-		-- Fourth stage -> LOBBY_BUY_RR
-		if
-			(Lobby.getRemainingRRFromEventShop("SummerShop") == 200)
-			and (Lobby.getRemainingRRFromEventShop("SpringShop") == 200)
-			and continue
-		then
-			if icedTea >= 300000 and flowers >= 300000 then
-				Lobby.buyAllRRFromEventShop("SummerShop")
-				Lobby.buyAllRRFromEventShop("SpringShop")
-				-- Bought all RR
-				data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
-				data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
-				WebhookManager.post("Bought all RR from event shops (LOBBY)", 5763719, data)
-			else
-				-- Not enough resources, going to timechamber
-				teleportToTimeChamber()
-				state = "LOBBY_TIME_CHAMBER"
+		-- FOURTH STAGE (LAST IF SET SO)
+		if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 then
+			if icedTea < 300000 then
+				loadNousigi("DriedLake")
+				WebhookManager.post("Going to Dried Lake to farm Iced Tea (LOBBY)", 16705372, data)
+				state = "LOBBY_TEA"
 				continue = false
+			elseif icedTea >= 300000 then
+				Lobby.buyAllRRFromEventShop("SummerShop")
+				WebhookManager.message(`> **{Player.Name}** bought all RR from summer shop.`)
 			end
-		elseif
+		end
+
+		-- TOGGLE FIFTH STAGE
+		local SpringRR = false
+
+		-- FIFTH STAGE -> FLOWER TIME CHAMBER
+		if
 			(Lobby.getRemainingRRFromEventShop("SummerShop") == 0)
 			and (Lobby.getRemainingRRFromEventShop("SpringShop") == 200)
+			and SpringRR
 		then
 			-- Bought all Summer RR but not Spring RR (this is due to old kaitun), going to spring shop
 			if flowers >= 300000 then
@@ -663,7 +663,6 @@ function start()
 				data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
 				WebhookManager.post("Bought all RR from Spring Shop (LOBBY)", 5763719, data)
 			else
-
 				teleportToTimeChamber()
 				state = "LOBBY_TIME_CHAMBER"
 				continue = false
@@ -675,6 +674,7 @@ function start()
 			data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
 			data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
 
+			writefile(`{Player.Name}.txt`, "Completed-AV")
 			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, data, true)
 		end
 	end
@@ -792,6 +792,28 @@ function start()
 				then
 					WebhookManager.message(
 						`> *({Player.Name})* It's now weekend and level is below {CONFIG.LEVEL.WEEKEND_LEVEL_TARGET}, going back to lobby!`
+					)
+					teleportToLobby()
+					return
+				end
+			end)
+		end
+
+		if Game.hasEscanor() and continue then
+			loadNousigi("DriedLake")
+			WebhookManager.post("Farming Iced Tea (IN-GAME)", 5763719, data)
+			state = "GAME_TEA"
+			continue = false
+
+			Player.AttributeChanged:Connect(function(attribute)
+				if attribute ~= "IcedTea" and attribute ~= "Level" then
+					return
+				end
+
+				-- Iced tea Check
+				if getAttribute("IcedTea") >= 300000 then
+					WebhookManager.message(
+						`> *{Player.Name}* has {getAttribute("IcedTea")} Iced Tea, going back to lobby to buy RR!`
 					)
 					teleportToLobby()
 					return
