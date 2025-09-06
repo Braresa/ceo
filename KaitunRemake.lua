@@ -2,7 +2,7 @@ local CONFIG = getgenv().KaitunWiredConfig
 	or {
 		LEVEL = {
 			MINIMUM_LEVEL_TARGET = 11,
-			WEEKEND_LEVEL_TARGET = 50,
+			WEEKEND_LEVEL_TARGET = 30,
 			ONLY_FARM_LEVEL_ON_WEEKEND = true,
 		},
 		ICED_TEA_TO_SUMMON = 400000,
@@ -676,9 +676,9 @@ function start()
 					return
 				end
 
-				if Player:GetAttribute("Level") >= CONFIG.WEEKEND_LEVEL_TARGET then
+				if Player:GetAttribute("Level") >= CONFIG.LEVEL.WEEKEND_LEVEL_TARGET then
 					WebhookManager.post(
-						"Reached level " .. CONFIG.WEEKEND_LEVEL_TARGET .. ", going back to lobby",
+						"Reached level " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. ", going back to lobby",
 						5763719,
 						data
 					)
@@ -749,10 +749,10 @@ function start()
 				if
 					CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND
 					and IsWeekend()
-					and Player:GetAttribute("Level") < CONFIG.WEEKEND_LEVEL_TARGET
+					and Player:GetAttribute("Level") < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET
 				then
 					WebhookManager.post(
-						"It's weekend and level is below " .. CONFIG.WEEKEND_LEVEL_TARGET .. ", going back to lobby",
+						"It's weekend and level is below " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. ", going back to lobby",
 						5763719,
 						data
 					)
