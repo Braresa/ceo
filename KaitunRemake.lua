@@ -76,7 +76,7 @@ task.spawn(function()
 			})
 		end
 
-		task.wait(60)
+		task.wait(Random.new():NextInteger(60, 180)) -- Check every 1 to 3 minutes
 	end
 end)
 
