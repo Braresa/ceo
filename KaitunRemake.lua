@@ -918,6 +918,7 @@ task.spawn(function()
 				getAttribute("Flowers"),
 				getAttribute("Gold")
 			)
+			break
 		end
 
 		task.wait(14400) -- 4 hours
