@@ -252,7 +252,14 @@ local function teleportToPlace(placeId)
 		if ok then
 			break
 		else
-			WebhookManager.error("Failed to teleport to placeId " .. tostring(placeId) .. " for player " .. Player.Name .. ": " .. tostring(err))
+			WebhookManager.error(
+				"Failed to teleport to placeId "
+					.. tostring(placeId)
+					.. " for player "
+					.. Player.Name
+					.. ": "
+					.. tostring(err)
+			)
 			task.wait(8)
 		end
 	end
@@ -708,7 +715,10 @@ function start()
 					return
 				end
 
-				if (not IsWeekend() and Player:GetAttribute("Level") >= CONFIG.LEVEL.MINIMUM_LEVEL_TARGET) or (IsWeekend()and Player:GetAttribute("Level") >= CONFIG.LEVEL.WEEKEND_LEVEL_TARGET) then
+				if
+					(not IsWeekend() and Player:GetAttribute("Level") >= CONFIG.LEVEL.MINIMUM_LEVEL_TARGET)
+					or (IsWeekend() and Player:GetAttribute("Level") >= CONFIG.LEVEL.WEEKEND_LEVEL_TARGET)
+				then
 					WebhookManager.post(
 						"Reached level " .. CONFIG.LEVEL.MINIMUM_LEVEL_TARGET .. ", going back to lobby",
 						5763719,
@@ -745,7 +755,9 @@ function start()
 					and Player:GetAttribute("Level") < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET
 				then
 					WebhookManager.post(
-						"It's weekend and level is below " .. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET .. ", going back to lobby",
+						"It's weekend and level is below "
+							.. CONFIG.LEVEL.WEEKEND_LEVEL_TARGET
+							.. ", going back to lobby",
 						5763719,
 						data
 					)
