@@ -40,7 +40,7 @@ local TeleportService = game:GetService("TeleportService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local RunService = game:GetService("RunService")
 
-local VERSION = "7"
+local VERSION = "8"
 
 local Player = Players.LocalPlayer
 
@@ -693,6 +693,7 @@ function start()
 			SpringRR
 			and (Lobby.getRemainingRRFromEventShop("SummerShop") == 200)
 			and (Lobby.getRemainingRRFromEventShop("SpringShop") == 200)
+			and continue
 		then
 			if icedTea >= 300000 and flowers >= 300000 then
 				Lobby.buyAllRRFromEventShop("SummerShop")
