@@ -582,7 +582,7 @@ function start()
 	local SpringRR = false
 
 	for name, accountType in pairs(exceptions) do
-		if name == Player.Name then
+		if string.lower(name) == string.lower(Player.Name) then
 			if accountType == "type1" then
 				CONFIG.LEVEL.WEEKEND_LEVEL_FARM = false
 			elseif accountType == "type2" then
@@ -675,20 +675,6 @@ function start()
 			continue = false
 		end
 
-		-- FOURTH STAGE
-		if not SpringRR and Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and continue then
-			if icedTea < 300000 then
-				loadNousigi("DriedLake")
-				WebhookManager.post("Going to Dried Lake to farm Iced Tea (LOBBY)", 16705372, data)
-				state = "LOBBY_TEA"
-				continue = false
-			elseif icedTea >= 300000 then
-				Lobby.buyAllRRFromEventShop("SummerShop")
-				WebhookManager.message(`> **{Player.Name}** bought all RR from summer shop.`)
-			end
-		end
-
-		-- FIFTH STAGE -> FLOWER TIME CHAMBER
 		if
 			SpringRR
 			and (Lobby.getRemainingRRFromEventShop("SummerShop") == 200)
@@ -709,6 +695,21 @@ function start()
 				continue = false
 			end
 		end
+
+		-- FOURTH STAGE
+		if not SpringRR and Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and continue then
+			if icedTea < 300000 then
+				loadNousigi("DriedLake")
+				WebhookManager.post("Going to Dried Lake to farm Iced Tea (LOBBY)", 16705372, data)
+				state = "LOBBY_TEA"
+				continue = false
+			elseif icedTea >= 300000 then
+				Lobby.buyAllRRFromEventShop("SummerShop")
+				WebhookManager.message(`> **{Player.Name}** bought all RR from summer shop.`)
+			end
+		end
+
+		-- FIFTH STAGE -> FLOWER TIME CHAMBER
 
 		-- Fifth stage -> COMPLETED
 		if continue then
