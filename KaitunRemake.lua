@@ -40,7 +40,7 @@ local TeleportService = game:GetService("TeleportService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local RunService = game:GetService("RunService")
 
-local VERSION = "6"
+local VERSION = "7"
 
 local Player = Players.LocalPlayer
 
@@ -491,24 +491,12 @@ local Lobby = {
 		return CACHE.hasEscanor
 	end,
 
-	SetupEscanorEvent = function(callback: () -> any...)
-		local SummonEvent = game:GetService("ReplicatedStorage").Networking.Units.SummonEvent
-
-		SummonEvent.OnClientEvent:Connect(function(action, units)
-			if action == "SummonTenAnimation" then
-				for i, unit in units do
-					local identifier = unit.UnitObject.Identifier
-					if identifier == 270 then
-						callback()
-					end
-				end
-			elseif action == "SummonOneAnimation" then
-				local unit = units
-				local identifier = unit.UnitObject.Identifier
-				if identifier == 270 then
-					callback()
-				end
-			end
+	SetupEscanorEvent = function(callback)
+		local SummonAnimationHandler =
+			require(game:GetService("StarterPlayer").Modules.Gameplay.Summon.SummonAnimationHandler)
+		local CustomSummonAnimationSignal = SummonAnimationHandler.SummonAnimationPlayed
+		CustomSummonAnimationSignal:Connect(function()
+			callback()
 		end)
 	end,
 }
