@@ -492,10 +492,6 @@ local Lobby = {
 	SetupEscanorEvent = function(callback)
 		local SummonAnimationHandler =
 			require(game:GetService("StarterPlayer").Modules.Gameplay.Summon.SummonAnimationHandler)
-		local CustomSummonAnimationSignal = SummonAnimationHandler.SummonAnimationPlayed
-		CustomSummonAnimationSignal:Connect(function()
-			callback()
-		end)
 	end,
 }
 
