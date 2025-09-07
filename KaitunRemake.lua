@@ -575,29 +575,29 @@ function start()
 		print("Loaded Nousigi with config: " .. config)
 	end
 
+	local exceptions = {
+		["kallbul799"] = "type3",
+	}
+
+	local SpringRR = false
+
+	for name, accountType in pairs(exceptions) do
+		if accountType == "type1" then
+			CONFIG.LEVEL.WEEKEND_LEVEL_FARM = false
+		elseif accountType == "type2" then
+			-- Default
+		elseif accountType == "type3" then
+			CONFIG.LEVEL.WEEKEND_LEVEL_TARGET = 50
+			SpringRR = true
+		end
+	end
+
 	-- LOBBY LOGIC
 	if isLobby() then
 		Lobby.ClaimLevelMilestones()
 		Lobby.CheckIfExpandUnits()
 		Lobby.CloseUpdateLog()
 		Lobby.ClaimCodes()
-
-		local exceptions = {
-			["kallbul799"] = "type3"
-		}
-		
-		local SpringRR = false
-
-		for name, accountType in pairs(exceptions) do
-			if accountType == "type1" then
-				CONFIG.LEVEL.WEEKEND_LEVEL_FARM = false
-			elseif accountType == "type2" then
-				-- Default
-			elseif accountType == "type3" then
-				CONFIG.LEVEL.WEEKEND_LEVEL_TARGET = 50
-				SpringRR = true
-			end
-		end
 
 		local data = {
 			hasEscanor = tostring(Lobby.hasEscanor()),
@@ -688,8 +688,8 @@ function start()
 
 		-- FIFTH STAGE -> FLOWER TIME CHAMBER
 		if
-			SpringRR and
-			(Lobby.getRemainingRRFromEventShop("SummerShop") == 200)
+			SpringRR
+			and (Lobby.getRemainingRRFromEventShop("SummerShop") == 200)
 			and (Lobby.getRemainingRRFromEventShop("SpringShop") == 200)
 		then
 			if icedTea >= 300000 and flowers >= 300000 then
