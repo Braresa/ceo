@@ -559,6 +559,7 @@ function start()
 
 	local exceptions = {
 		["kallbul799"] = "type3",
+		["latrisag6757"] = "type3"	
 	}
 
 	local SpringRR = false
