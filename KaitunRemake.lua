@@ -857,6 +857,11 @@ function start()
 	end
 
 	if isTimeChamber() then
+		if not SpringRR then
+			WebhookManager.message("> *{Player.Name}* is in time chamber but doesn't need to be here, going back to lobby...")
+			teleportToLobby()
+			return
+		end
 		WebhookManager.post("TIME CHAMBER", 5763719, nil)
 		state = "TIME_CHAMBER"
 		-- Checking if the player has enough resources
