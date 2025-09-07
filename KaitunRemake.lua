@@ -245,6 +245,7 @@ local WebhookManager = {
 	end,
 }
 
+-- Version check
 task.spawn(function()
 	local versionUrl = "https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/version.txt"
 	while true do
@@ -256,9 +257,6 @@ task.spawn(function()
 
 			if VERSION ~= remoteVersion then
 				attempts += 1
-				WebhookManager.message(
-					`> *{Player.Name}* has outdated Kaitun version. Attempt {attempts}/{maxAttempts}.`
-				)
 				if attempts >= maxAttempts then
 					WebhookManager.message(`> *{Player.Name}* was kicked for having an outdated Kaitun version.`)
 					Player:Kick("Kaitun outdated.")
@@ -268,7 +266,7 @@ task.spawn(function()
 				attempts = 0 -- reset attempts if version matches
 			end
 
-			task.wait(120) -- Check every 2 minutes
+			task.wait(Random.new(os.time()):NextInteger( 60, 180)) -- Check every 2 to 3 minutes
 		end
 	end
 end)
