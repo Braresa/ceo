@@ -148,7 +148,7 @@ local WebhookManager = {
 				["inline"] = true,
 			})
 			table.insert(fields, {
-				["name"] = "Winter RR left",
+				["name"] = "Spring RR left",
 				["value"] = data.winterRR or "N/A",
 				["inline"] = true,
 			})
@@ -579,12 +579,10 @@ function start()
 		Lobby.ClaimCodes()
 
 		Lobby.SetupEscanorEvent(function()
-			Lobby.UpdateSpreadsheet(
-				true,
-				Lobby.getRemainingRRFromEventShop("SummerShop"),
-				Lobby.getRemainingRRFromEventShop("SpringShop")
-			)
 			WebhookManager.post("Got Escanor!", 7419530, { stage = "Lobby", hasEscanor = true }, true)
+			WebhookManager.message(`> **{Player.Name}** got Escanor!`)
+			getgenv().Config["Summoner"]["Auto Summon Summer"] = false
+			Player:Kick("Got Escanor, rejoining.")
 		end)
 
 		local data = {
