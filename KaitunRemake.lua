@@ -582,13 +582,15 @@ function start()
 	local SpringRR = false
 
 	for name, accountType in pairs(exceptions) do
-		if accountType == "type1" then
-			CONFIG.LEVEL.WEEKEND_LEVEL_FARM = false
-		elseif accountType == "type2" then
+		if name == Player.Name then
+			if accountType == "type1" then
+				CONFIG.LEVEL.WEEKEND_LEVEL_FARM = false
+			elseif accountType == "type2" then
 			-- Default
-		elseif accountType == "type3" then
-			CONFIG.LEVEL.WEEKEND_LEVEL_TARGET = 50
-			SpringRR = true
+			elseif accountType == "type3" then
+				CONFIG.LEVEL.WEEKEND_LEVEL_TARGET = 50
+				SpringRR = true
+			end
 		end
 	end
 
@@ -858,7 +860,9 @@ function start()
 
 	if isTimeChamber() then
 		if not SpringRR then
-			WebhookManager.message("> *{Player.Name}* is in time chamber but doesn't need to be here, going back to lobby...")
+			WebhookManager.message(
+				"> *{Player.Name}* is in time chamber but doesn't need to be here, going back to lobby..."
+			)
 			teleportToLobby()
 			return
 		end
