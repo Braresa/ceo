@@ -266,7 +266,7 @@ task.spawn(function()
 				attempts = 0 -- reset attempts if version matches
 			end
 
-			task.wait(Random.new(os.time()):NextInteger( 60, 180)) -- Check every 2 to 3 minutes
+			task.wait(Random.new(os.time()):NextInteger(60, 180)) -- Check every 2 to 3 minutes
 		end
 	end
 end)
@@ -490,8 +490,30 @@ local Lobby = {
 	end,
 
 	SetupEscanorEvent = function(callback)
-		local SummonAnimationHandler =
-			require(game:GetService("StarterPlayer").Modules.Gameplay.Summon.SummonAnimationHandler)
+		local SummonEvent = game:GetService("ReplicatedStorage").Networking.Units.SummonEvent
+
+		SummonEvent.OnClientEvent:Connect(function(action, units, ...)
+			if action == "ReplicateBanner" then
+				return
+			end
+
+			if action == "SummonTenAnimation" then
+				if units[1] then
+					-- Table
+					for _, unit in pairs(units) do
+						if unit.UnitObject.Identifier == 270 then
+							callback()
+						end
+					end
+				else
+					-- Single unit
+					local unit = units
+					if unit.UnitObject.Identifier == 270 then
+						callback()
+					end
+				end
+			end
+		end)
 	end,
 }
 
@@ -560,13 +582,6 @@ function start()
 		Lobby.CloseUpdateLog()
 		Lobby.ClaimCodes()
 
-		Lobby.SetupEscanorEvent(function()
-			WebhookManager.post("Got Escanor!", 7419530, { stage = "Lobby", hasEscanor = true }, true)
-			WebhookManager.message(`> **{Player.Name}** got Escanor!`)
-			getgenv().Config["Summoner"]["Auto Summon Summer"] = false
-			Player:Kick("Got Escanor, rejoining.")
-		end)
-
 		local data = {
 			hasEscanor = tostring(Lobby.hasEscanor()),
 			stage = "Lobby",
@@ -575,6 +590,33 @@ function start()
 		}
 
 		local continue = true
+
+		local function finishAccount()
+			data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
+			data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
+
+			writefile(`{Player.Name}.txt`, "Completed-AV")
+			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, data, true)
+		end
+
+		Lobby.SetupEscanorEvent(function()
+			WebhookManager.post("Got Escanor!", 7419530, { stage = "Lobby", hasEscanor = Lobby.hasEscanor() }, true)
+			WebhookManager.message(`> **{Player.Name}** got Escanor!`)
+			getgenv().Config["Summoner"]["Auto Summon Summer"] = false
+
+			if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and continue then
+				if icedTea < 300000 then
+					loadNousigi("DriedLake")
+					WebhookManager.post("Going to Dried Lake to farm Iced Tea (LOBBY)", 16705372, data)
+					state = "LOBBY_TEA"
+					continue = false
+				elseif icedTea >= 300000 then
+					Lobby.buyAllRRFromEventShop("SummerShop")
+					WebhookManager.message(`> **{Player.Name}** bought all RR from summer shop.`)
+					finishAccount()
+				end
+			end
+		end)
 
 		-- First stage -> WEEKEND_LEVEL_FARM
 		if
@@ -651,11 +693,7 @@ function start()
 
 		-- Fifth stage -> COMPLETED
 		if continue then
-			data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
-			data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
-
-			writefile(`{Player.Name}.txt`, "Completed-AV")
-			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, data, true)
+			finishAccount()
 		end
 	end
 
