@@ -582,6 +582,23 @@ function start()
 		Lobby.CloseUpdateLog()
 		Lobby.ClaimCodes()
 
+		local exceptions = {
+			["kallbul799"] = "type3"
+		}
+		
+		local SpringRR = false
+
+		for name, accountType in pairs(exceptions) do
+			if accountType == "type1" then
+				CONFIG.LEVEL.WEEKEND_LEVEL_FARM = false
+			elseif accountType == "type2" then
+				-- Default
+			elseif accountType == "type3" then
+				CONFIG.LEVEL.WEEKEND_LEVEL_TARGET = 50
+				SpringRR = true
+			end
+		end
+
 		local data = {
 			hasEscanor = tostring(Lobby.hasEscanor()),
 			stage = "Lobby",
@@ -656,8 +673,8 @@ function start()
 			continue = false
 		end
 
-		-- FOURTH STAGE (LAST IF SET SO)
-		if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and continue then
+		-- FOURTH STAGE
+		if not SpringRR and Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and continue then
 			if icedTea < 300000 then
 				loadNousigi("DriedLake")
 				WebhookManager.post("Going to Dried Lake to farm Iced Tea (LOBBY)", 16705372, data)
@@ -669,21 +686,20 @@ function start()
 			end
 		end
 
-		-- TOGGLE FIFTH STAGE
-		local SpringRR = false
-
 		-- FIFTH STAGE -> FLOWER TIME CHAMBER
 		if
-			(Lobby.getRemainingRRFromEventShop("SummerShop") == 0)
+			SpringRR and
+			(Lobby.getRemainingRRFromEventShop("SummerShop") == 200)
 			and (Lobby.getRemainingRRFromEventShop("SpringShop") == 200)
-			and SpringRR
 		then
-			-- Bought all Summer RR but not Spring RR (this is due to old kaitun), going to spring shop
-			if flowers >= 300000 then
+			if icedTea >= 300000 and flowers >= 300000 then
+				Lobby.buyAllRRFromEventShop("SummerShop")
 				Lobby.buyAllRRFromEventShop("SpringShop")
+
 				data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
 				data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
-				WebhookManager.post("Bought all RR from Spring Shop (LOBBY)", 5763719, data)
+
+				WebhookManager.message(`> **{Player.Name}** Bought all RR available on the event shops! (LOBBY)`)
 			else
 				teleportToTimeChamber()
 				state = "LOBBY_TIME_CHAMBER"
