@@ -25,10 +25,6 @@ local CONFIG = getgenv().KaitunWiredConfig
 		API_KEY = "",
 	}
 
-local CACHE = {
-	hasEscanor = nil,
-}
-
 -- Version check
 
 -- Services
@@ -465,10 +461,6 @@ local Lobby = {
 	end,
 
 	hasEscanor = function()
-		if CACHE.hasEscanor ~= nil then
-			return CACHE.hasEscanor
-		end
-
 		local OwnedUnitsHandler =
 			require(game:GetService("StarterPlayer").Modules.Interface.Loader.Gameplay.Units.OwnedUnitsHandler)
 		local units = OwnedUnitsHandler:GetOwnedUnits()
@@ -478,15 +470,13 @@ local Lobby = {
 				for _, unit in pairs(units) do
 					if (unit.ID == 270) or (unit.Identifier == 270) then
 						-- Has escanor
-						CACHE.hasEscanor = true
 						return true
 					end
 				end
 			end
 		end
 
-		CACHE.hasEscanor = false
-		return CACHE.hasEscanor
+		return false
 	end,
 
 	SetupEscanorEvent = function(callback)
@@ -526,10 +516,6 @@ local Game = {
 	end,
 
 	hasEscanor = function(): boolean
-		if CACHE.hasEscanor ~= nil then
-			return CACHE.hasEscanor
-		end
-
 		local UnitWindows = require(game:GetService("StarterPlayer").Modules.Interface.Loader.Windows.UnitWindowHandler)
 		local units = UnitWindows._Cache
 
@@ -537,17 +523,13 @@ local Game = {
 			if units ~= nil then
 				for _, unit in pairs(units) do
 					if (unit.ID == 270) or (unit.Identifier == 270) then
-						-- Has escanor
-						CACHE.hasEscanor = true
 						return true
 					end
 				end
 			end
 		end
 
-		CACHE.hasEscanor = false
-
-		return CACHE.hasEscanor
+		return false
 	end,
 }
 
@@ -618,25 +600,6 @@ function start()
 			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, data, true)
 		end
 
-		Lobby.SetupEscanorEvent(function()
-			WebhookManager.post("Got Escanor!", 7419530, { stage = "Lobby", hasEscanor = Lobby.hasEscanor() }, true)
-			WebhookManager.message(`> **{Player.Name}** got Escanor!`)
-			getgenv().Config["Summoner"]["Auto Summon Summer"] = false
-
-			if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and continue then
-				if icedTea < 300000 then
-					loadNousigi("DriedLake")
-					WebhookManager.post("Going to Dried Lake to farm Iced Tea (LOBBY)", 16705372, data)
-					state = "LOBBY_TEA"
-					continue = false
-				elseif icedTea >= 300000 then
-					Lobby.buyAllRRFromEventShop("SummerShop")
-					WebhookManager.message(`> **{Player.Name}** bought all RR from summer shop.`)
-					finishAccount()
-				end
-			end
-		end)
-
 		-- First stage -> WEEKEND_LEVEL_FARM
 		if
 			CONFIG.LEVEL.ONLY_FARM_LEVEL_ON_WEEKEND
@@ -672,6 +635,42 @@ function start()
 			loadNousigi("DriedLakeSummon")
 			WebhookManager.post("Going to Dried Lake to farm Escanor (LOBBY)", 16705372, data)
 			state = "LOBBY_ESCANOR"
+
+			task.spawn(function()
+				while true do
+
+					if not Lobby.hasEscanor() then
+						task.wait(10)
+						continue
+					end
+
+					WebhookManager.post(
+						"Got Escanor!",
+						7419530,
+						{ stage = "Lobby", hasEscanor = Lobby.hasEscanor() },
+						true
+					)
+					WebhookManager.message(`> **{Player.Name}** got Escanor!`)
+					getgenv().Config["Summoner"]["Auto Summon Summer"] = false
+
+					if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and continue then
+						if icedTea < 300000 then
+							WebhookManager.message("> **{Player.Name}** kicking player to impede spending Iced Tea.")
+							state = "LOBBY_TEA"
+							continue = false
+							Player:Kick()
+						elseif icedTea >= 300000 then
+							Lobby.buyAllRRFromEventShop("SummerShop")
+							WebhookManager.message(`> **{Player.Name}** bought all RR from summer shop.`)
+							finishAccount()
+						end
+					end
+
+					
+					break
+				end
+			end)
+
 			continue = false
 		end
 
