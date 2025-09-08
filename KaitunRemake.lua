@@ -654,7 +654,7 @@ function start()
 					WebhookManager.message(`> **{Player.Name}** got Escanor!`)
 					getgenv().Config["Summoner"]["Auto Summon Summer"] = false
 
-					if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and continue then
+					if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 then
 						if icedTea < 300000 then
 							WebhookManager.message("> **{Player.Name}** kicking player to impede spending Iced Tea.")
 							state = "LOBBY_TEA"
