@@ -247,7 +247,7 @@ local WebhookManager = {
 	}
 
 task.delay(900, function()
-	if isLobby() and not exceptions[Player.Name] then
+	if isLobby() and exceptions[Player.Name] ~= nil and exceptions[Player.Name] == "type3" then
 		WebhookManager.message(`> *{Player.Name}* Kaitun seems to be stuck in the gray screen, kicking`)
 		Player:Kick("Kaitun seems to be stuck in the gray screen.")
 	end
