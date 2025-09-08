@@ -48,7 +48,6 @@ function isLobby()
 	return game.PlaceId == CONFIG.PLACE_IDS.LOBBY
 end
 
-
 function isGame()
 	return game.PlaceId == CONFIG.PLACE_IDS.INGAME
 end
@@ -567,7 +566,7 @@ function start()
 
 	local exceptions = {
 		["kallbul799"] = "type3",
-		["latrisag6757"] = "type3"	
+		["latrisag6757"] = "type3",
 	}
 
 	local SpringRR = false
@@ -647,7 +646,6 @@ function start()
 
 			task.spawn(function()
 				while true do
-
 					if not Lobby.hasEscanor() then
 						task.wait(10)
 						continue
@@ -656,24 +654,51 @@ function start()
 					WebhookManager.post(
 						"Got Escanor!",
 						7419530,
-						{ stage = "Lobby", hasEscanor = Lobby.hasEscanor() },
+						{
+							stage = "Lobby",
+							hasEscanor = Lobby.hasEscanor(),
+							summerRR = Lobby.getRemainingRRFromEventShop("SummerShop"),
+							winterRR = Lobby.getRemainingRRFromEventShop("SpringShop"),
+						},
 						true
 					)
 					WebhookManager.message(`> **{Player.Name}** got Escanor!`)
 					getgenv().Config["Summoner"]["Auto Summon Summer"] = false
 
-					if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 then
+					if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and not SpringRR then
 						if getAttribute("IcedTea") < 300000 then
 							state = "LOBBY_TEA"
 						elseif getAttribute("IcedTea") >= 300000 then
 							Lobby.buyAllRRFromEventShop("SummerShop")
-							getgenv().Config["Summer Event"] = {["Summer Event Joiner"] = {["Auto Join"] = false}}
+							getgenv().Config["Summer Event"] = { ["Summer Event Joiner"] = { ["Auto Join"] = false } }
 							WebhookManager.message(`> **{Player.Name}** bought all RR from summer shop.`)
 							finishAccount()
 						end
 					end
 
-					
+					if
+						SpringRR
+						and (Lobby.getRemainingRRFromEventShop("SummerShop") == 200)
+						and (Lobby.getRemainingRRFromEventShop("SpringShop") == 200)
+					then
+						if icedTea >= 300000 and flowers >= 300000 then
+							Lobby.buyAllRRFromEventShop("SummerShop")
+							Lobby.buyAllRRFromEventShop("SpringShop")
+
+							data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
+							data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
+
+							WebhookManager.message(
+								`> **{Player.Name}** Bought all RR available on the event shops! (LOBBY)`
+							)
+							finishAccount()
+						else
+							teleportToTimeChamber()
+							state = "LOBBY_TIME_CHAMBER"
+							continue = false
+						end
+					end
+
 					break
 				end
 			end)
