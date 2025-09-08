@@ -245,6 +245,7 @@ local WebhookManager = {
 task.delay(900, function()
 	if isLobby() then
 		WebhookManager.message(`> *{Player.Name}* Kaitun seems to be stuck in the gray screen, kicking`)
+		Player:Kick("Kaitun seems to be stuck in the gray screen.")
 	end
 end)
 
