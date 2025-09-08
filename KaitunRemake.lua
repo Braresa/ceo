@@ -19,8 +19,8 @@ local CONFIG = getgenv().KaitunWiredConfig
 				DRIED_LAKE = "https://paste.dotwired.org/Dried%20Lake.txt",
 			},
 		},
-		WEBHOOK_URL = "https://discord.com/api/webhooks/1413475272316948500/iHTq99gxv-bX5v1c9JnorJMvWub3ihldMpgucvYREzRu8r-U1pp5B273UnuZjoYuBR5f",
-		ERROR_WEBHOOK_URL = "https://discord.com/api/webhooks/1413456894978293760/x69F2siE7P-rFGl4xuZBCKXLGosUS9sukyPjy9ui1aGBmU-guuHG5CYU0J569dG6tLlf",
+		WEBHOOK_URL = "",
+		ERROR_WEBHOOK_URL = "",
 		SPREADSHEET_REST_URL = "",
 		API_KEY = "",
 	}
@@ -596,7 +596,7 @@ function start()
 		local function finishAccount()
 			data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
 			data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
-
+			state = "DONE"
 			writefile(`{Player.Name}.txt`, "Completed-AV")
 			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, data, true)
 		end
@@ -863,12 +863,12 @@ function start()
 	if isTimeChamber() then
 		if not SpringRR then
 			WebhookManager.message(
-				"> *{Player.Name}* is in time chamber but doesn't need to be here, going back to lobby..."
+				`> *{Player.Name}* is in time chamber but doesn't need to be here, going back to lobby...`
 			)
 			teleportToLobby()
 			return
 		end
-		WebhookManager.post("TIME CHAMBER", 5763719, nil)
+		WebhookManager.post("Farming flowers (TIME CHAMBER)", 5763719, nil)
 		state = "TIME_CHAMBER"
 		-- Checking if the player has enough resources
 		Player.AttributeChanged:Connect(function(attribute)
