@@ -241,8 +241,13 @@ local WebhookManager = {
 	end,
 }
 
+	local exceptions = {
+		["kallbul799"] = "type3",
+		["latrisag6757"] = "type3",
+	}
+
 task.delay(900, function()
-	if isLobby() then
+	if isLobby() and not exceptions[Player.Name] then
 		WebhookManager.message(`> *{Player.Name}* Kaitun seems to be stuck in the gray screen, kicking`)
 		Player:Kick("Kaitun seems to be stuck in the gray screen.")
 	end
@@ -563,11 +568,6 @@ function start()
 		loadstring(game:HttpGet("https://nousigi.com/loader.lua"))()
 		print("Loaded Nousigi with config: " .. config)
 	end
-
-	local exceptions = {
-		["kallbul799"] = "type3",
-		["latrisag6757"] = "type3",
-	}
 
 	local SpringRR = false
 
