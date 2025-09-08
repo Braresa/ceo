@@ -655,10 +655,11 @@ function start()
 					getgenv().Config["Summoner"]["Auto Summon Summer"] = false
 
 					if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 then
-						if icedTea < 300000 then
+						if getAttribute("IcedTea") < 300000 then
 							state = "LOBBY_TEA"
-						elseif icedTea >= 300000 then
+						elseif getAttribute("IcedTea") >= 300000 then
 							Lobby.buyAllRRFromEventShop("SummerShop")
+							getgenv().Config["Summer Event"] = {["Summer Event Joiner"] = {["Auto Join"] = false}}
 							WebhookManager.message(`> **{Player.Name}** bought all RR from summer shop.`)
 							finishAccount()
 						end
