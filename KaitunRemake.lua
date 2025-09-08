@@ -48,6 +48,7 @@ function isLobby()
 	return game.PlaceId == CONFIG.PLACE_IDS.LOBBY
 end
 
+
 function isGame()
 	return game.PlaceId == CONFIG.PLACE_IDS.INGAME
 end
@@ -240,6 +241,12 @@ local WebhookManager = {
 		return request(options)
 	end,
 }
+
+task.delay(900, function()
+	if isLobby() then
+		WebhookManager.message(`> *{Player.Name}* Kaitun seems to be stuck in the gray screen, kicking`)
+	end
+end)
 
 -- Version check
 task.spawn(function()
