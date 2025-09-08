@@ -656,10 +656,7 @@ function start()
 
 					if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 then
 						if icedTea < 300000 then
-							WebhookManager.message("> **{Player.Name}** kicking player to impede spending Iced Tea.")
 							state = "LOBBY_TEA"
-							continue = false
-							Player:Kick()
 						elseif icedTea >= 300000 then
 							Lobby.buyAllRRFromEventShop("SummerShop")
 							WebhookManager.message(`> **{Player.Name}** bought all RR from summer shop.`)
