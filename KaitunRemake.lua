@@ -456,6 +456,7 @@ local Lobby = {
 			Flowers = getAttribute("Flowers"),
 			["Gems / Gold"] = `{getAttribute("Gems")} / {getAttribute("Gold")}`,
 			HasEscanor = tostring(hasEscanor),
+			["Escanor Pity"] = getAttribute("SummerVanguardPity"),
 			LeftSummerRR = summerRR,
 			LeftSpringRR = springRR,
 			HasFalcon = "N/A",
@@ -1068,7 +1069,7 @@ task.spawn(function()
 			LeftSummerRR = remainingRRSummer or nil,
 			LeftSpringRR = remainingRRSpring or nil,
 			UPDATED = getBrazilianTimestamp(),
-			["Escanor Pity"] = getAttribute("SummerVanguardPity")
+			["Escanor Pity"] = getAttribute("SummerVanguardPity"),
 		}
 
 		if isPlayerinSS(playerDataJson) then
@@ -1078,7 +1079,8 @@ task.spawn(function()
 		end
 	end
 
-	while true do
+	--[[
+		while true do
 		print("Updating info...")
 
 		if isLobby() then
@@ -1124,6 +1126,7 @@ task.spawn(function()
 
 		task.wait(14400) -- 4 hours
 	end
+	]]
 end)
 
 function getBrazilianTimestamp()
