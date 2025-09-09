@@ -1068,6 +1068,7 @@ task.spawn(function()
 			LeftSummerRR = remainingRRSummer or nil,
 			LeftSpringRR = remainingRRSpring or nil,
 			UPDATED = getBrazilianTimestamp(),
+			["Escanor Pity"] = getAttribute("SummerVanguardPity")
 		}
 
 		if isPlayerinSS(playerDataJson) then
