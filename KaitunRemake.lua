@@ -155,6 +155,11 @@ local WebhookManager = {
 					:WaitForChild("Holder").OwnedUnitsLabel.UnitAmount.Text,
 				["inline"] = true,
 			})
+			table.insert(fields, {
+				["name"] = "Escanor Pity",
+				["value"] = getAttribute("SummerVanguardPity"),
+				["inline"] = true,
+			})
 		end
 
 		local embed = {
@@ -241,10 +246,10 @@ local WebhookManager = {
 	end,
 }
 
-	local exceptions = {
-		["kallbul799"] = "type3",
-		["latrisag6757"] = "type3",
-	}
+local exceptions = {
+	["kallbul799"] = "type3",
+	["latrisag6757"] = "type3",
+}
 
 task.delay(900, function()
 	if isLobby() and exceptions[Player.Name] ~= nil and exceptions[Player.Name] == "type3" then
@@ -294,16 +299,28 @@ function IsWeekend(): boolean
 end
 
 function teleportToLobby()
-	-- For some reason teleport doesn't work properly, we are kicking the player instead.
-	-- teleportToPlace(CONFIG.PLACE_IDS.LOBBY)
-	Player:Kick("Returning to lobby.")
-	WebhookManager.message(`> *{Player.Name}* is returning to lobby.`)
+	if isGame() then
+		local teleportEvent = game:GetService("ReplicatedStorage").Networking.TeleportEvent
+		teleportEvent:FireServer("Lobby")
+		WebhookManager.message(`> *{Player.Name}* is returning to lobby.`)
+	elseif isTimeChamber() then
+		WebhookManager.message(`> *{Player.Name}* is returning to lobby from time chamber.`)
+		local playerGui = game:GetService("Players").LocalPlayer
+			:WaitForChild("PlayerGui")
+			:WaitForChild("Main")
+			:WaitForChild("Create")
+			:WaitForChild("Button")
+		getconnections(playerGui.Activated)[1]:Fire()
+	end
 end
 
 function teleportToTimeChamber()
 	-- teleportToPlace(CONFIG.PLACE_IDS.TIME_CHAMBER)
-	TeleportService:Teleport(CONFIG.PLACE_IDS.TIME_CHAMBER, Player)
-	WebhookManager.message(`> *{Player.Name}* is going to time chamber (teleport is broken ~20min).`)
+	WebhookManager.message(`> *{Player.Name}* is going to time chamber.`)
+	local AFKEvent = game:GetService("ReplicatedStorage").Networking.AFKEvent
+	local afkConnection = getconnections(AFKEvent.OnClientEvent)[1]
+
+	afkConnection:Fire()
 end
 
 -- Lobby functions (works only on the lobby)
@@ -426,12 +443,13 @@ local Lobby = {
 		end
 	end,
 
-	UpdateSpreadsheet = function(hasEscanor, summerRR, springRR)
+	UpdateSpreadsheet = function(hasEscanor, summerRR, springRR, grindState)
 		local playerDataString = `{CONFIG.SPREADSHEET_REST_URL}/Username/*{Player.Name}*`
 		local playerDataJson = game:HttpGet(playerDataString)
 
 		local data = {
 			Username = Player.Name,
+			GRINDING = grindState,
 			Level = getAttribute("Level"),
 			IcedTea = getAttribute("IcedTea"),
 			TraitRerolls = getAttribute("TraitRerolls"),
@@ -464,7 +482,7 @@ local Lobby = {
 		end
 
 		if response and response.Success then
-			WebhookManager.message(`> *{Player.Name}* updated spreadsheet successfully (LOBBY).`)
+			WebhookManager.message(`> *{Player.Name}* updated spreadsheet successfully!`)
 		else
 			WebhookManager.warn(
 				`> *{Player.Name}* failed to update spreadsheet: {response and response.Body or "No response"}`
@@ -604,8 +622,10 @@ function start()
 			data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
 			data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
 			state = "DONE"
+			loadstring("https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/done.lua")()
 			writefile(`{Player.Name}.txt`, "Completed-AV")
 			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, data, true)
+			Lobby.UpdateSpreadsheet(Lobby.hasEscanor(), data.summerRR, data.winterRR, "DONE")
 		end
 
 		-- First stage -> WEEKEND_LEVEL_FARM
@@ -651,17 +671,12 @@ function start()
 						continue
 					end
 
-					WebhookManager.post(
-						"Got Escanor!",
-						7419530,
-						{
-							stage = "Lobby",
-							hasEscanor = Lobby.hasEscanor(),
-							summerRR = Lobby.getRemainingRRFromEventShop("SummerShop"),
-							winterRR = Lobby.getRemainingRRFromEventShop("SpringShop"),
-						},
-						true
-					)
+					WebhookManager.post("Got Escanor!", 7419530, {
+						stage = "Lobby",
+						hasEscanor = Lobby.hasEscanor(),
+						summerRR = Lobby.getRemainingRRFromEventShop("SummerShop"),
+						winterRR = Lobby.getRemainingRRFromEventShop("SpringShop"),
+					}, true)
 					WebhookManager.message(`> **{Player.Name}** got Escanor!`)
 					getgenv().Config["Summoner"]["Auto Summon Summer"] = false
 
