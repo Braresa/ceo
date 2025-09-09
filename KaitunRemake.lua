@@ -622,7 +622,7 @@ function start()
 			data.summerRR = Lobby.getRemainingRRFromEventShop("SummerShop")
 			data.winterRR = Lobby.getRemainingRRFromEventShop("SpringShop")
 			state = "DONE"
-			loadstring("https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/done.lua")()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/done.lua"))()
 			writefile(`{Player.Name}.txt`, "Completed-AV")
 			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, data, true)
 			Lobby.UpdateSpreadsheet(Lobby.hasEscanor(), data.summerRR, data.winterRR, "DONE")
