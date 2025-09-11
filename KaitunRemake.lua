@@ -1082,8 +1082,7 @@ task.spawn(function()
 		end
 	end
 
-	
-		while true do
+	while true do
 		print("Updating info...")
 
 		if isLobby() then
@@ -1094,7 +1093,7 @@ task.spawn(function()
 				getAttribute("IcedTea"),
 				getAttribute("Flowers"),
 				`{getAttribute("Gems")} / {getAttribute("Gold")}`,
-				tostring(Lobby.hasEscanor()),
+				Lobby.hasEscanor(),
 				"N/A",
 				Lobby.getRemainingRRFromEventShop("SummerShop"),
 				Lobby.getRemainingRRFromEventShop("SpringShop")
