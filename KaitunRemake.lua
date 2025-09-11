@@ -279,7 +279,7 @@ task.spawn(function()
 				attempts = 0 -- reset attempts if version matches
 			end
 
-			task.wait(Random.new(os.time()):NextInteger(60, 180)) -- Check every 2 to 3 minutes
+			task.wait(Random.new(os.time()):NextInteger(60, 600)) -- Check every 1 to 10 minutes
 		end
 	end
 end)
