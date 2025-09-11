@@ -1082,7 +1082,7 @@ task.spawn(function()
 		end
 	end
 
-	--[[
+	
 		while true do
 		print("Updating info...")
 
@@ -1129,7 +1129,6 @@ task.spawn(function()
 
 		task.wait(14400) -- 4 hours
 	end
-	]]
 end)
 
 function getBrazilianTimestamp()
