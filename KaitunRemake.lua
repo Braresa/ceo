@@ -445,7 +445,7 @@ local Lobby = {
 
 	UpdateSpreadsheet = function(hasEscanor, summerRR, springRR, grindState)
 		local playerDataString = `{CONFIG.SPREADSHEET_REST_URL}/Username/*{Player.Name}*`
-		local playerDataJson = game:HttpGet(playerDataString)
+		local playerDataJson = HTTP:JSONDecode(game:HttpGet(playerDataString))
 
 		local data = {
 			Username = Player.Name,
@@ -626,7 +626,7 @@ function start()
 			loadstring(game:HttpGet("https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/done.lua"))()
 			writefile(`{Player.Name}.txt`, "Completed-AV")
 			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, data, true)
-			Lobby.UpdateSpreadsheet(Lobby.hasEscanor(), data.summerRR, data.winterRR, "DONE")
+			Lobby.UpdateSpreadsheet(tostring(Lobby.hasEscanor()), data.summerRR, data.winterRR, "DONE")
 		end
 
 		-- First stage -> WEEKEND_LEVEL_FARM
@@ -671,6 +671,8 @@ function start()
 						task.wait(10)
 						continue
 					end
+
+					Lobby.UpdateSpreadsheet(Lobby.hasEscanor(), data.summerRR, data.winterRR, "DONE")
 
 					WebhookManager.post("Got Escanor!", 7419530, {
 						stage = "Lobby",
@@ -835,6 +837,7 @@ function start()
 					(not IsWeekend() and getAttribute("Level") >= CONFIG.LEVEL.MINIMUM_LEVEL_TARGET)
 					or (IsWeekend() and getAttribute("Level") >= CONFIG.LEVEL.WEEKEND_LEVEL_TARGET)
 				then
+					WebhookManager.message("> *{Player.Name}* reached level target, going back to lobby")
 					teleportToLobby()
 				end
 			end)
@@ -854,7 +857,7 @@ function start()
 
 				if getAttribute("Level") < CONFIG.LEVEL.MINIMUM_LEVEL_TARGET then
 					WebhookManager.message(
-						`> *({Player.Name})* Level is below {CONFIG.LEVEL.MINIMUM_LEVEL_TARGET} but is farming escanor? going back to lobby!`
+						`> *{Player.Name}* Level is below {CONFIG.LEVEL.MINIMUM_LEVEL_TARGET} but is farming escanor? going back to lobby!`
 					)
 					teleportToLobby()
 					return
@@ -863,7 +866,7 @@ function start()
 				-- Iced tea Check
 				if getAttribute("IcedTea") >= CONFIG.ICED_TEA_TO_SUMMON then
 					WebhookManager.message(
-						`> *({Player.Name})* has {getAttribute("IcedTea")} Iced Tea, going back to lobby to summon Escanor!`
+						`> *{Player.Name}* has {getAttribute("IcedTea")} Iced Tea, going back to lobby to summon Escanor!`
 					)
 					teleportToLobby()
 					return
@@ -876,7 +879,7 @@ function start()
 					and getAttribute("Level") < CONFIG.LEVEL.WEEKEND_LEVEL_TARGET
 				then
 					WebhookManager.message(
-						`> *({Player.Name})* It's now weekend and level is below {CONFIG.LEVEL.WEEKEND_LEVEL_TARGET}, going back to lobby!`
+						`> *{Player.Name}* It's now weekend and level is below {CONFIG.LEVEL.WEEKEND_LEVEL_TARGET}, going back to lobby!`
 					)
 					teleportToLobby()
 					return
