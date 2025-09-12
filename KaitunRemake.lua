@@ -449,7 +449,7 @@ local Lobby = {
 
 		local data = {
 			Username = Player.Name,
-			GRINDING = grindState,
+			Grinding = grindState,
 			Level = getAttribute("Level"),
 			IcedTea = getAttribute("IcedTea"),
 			TraitRerolls = getAttribute("TraitRerolls"),
@@ -672,20 +672,20 @@ function start()
 						continue
 					end
 
-
 					WebhookManager.post("Got Escanor!", 7419530, {
 						stage = "Lobby",
 						hasEscanor = Lobby.hasEscanor(),
 						summerRR = Lobby.getRemainingRRFromEventShop("SummerShop"),
 						winterRR = Lobby.getRemainingRRFromEventShop("SpringShop"),
 					}, true)
+
 					WebhookManager.message(`> **{Player.Name}** got Escanor!`)
 					getgenv().Config["Summoner"]["Auto Summon Summer"] = false
 
 					if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and not SpringRR then
 						if getAttribute("IcedTea") < 300000 then
 							state = "LOBBY_TEA"
-							Lobby.UpdateSpreadsheet(Lobby.hasEscanor(), Lobby.getRemainingRRFromEventShop("SummerShop"), Lobby.getRemainingRRFromEventShop("SpringShop"), "DONE")
+							Lobby.UpdateSpreadsheet(Lobby.hasEscanor(), Lobby.getRemainingRRFromEventShop("SummerShop"), Lobby.getRemainingRRFromEventShop("SpringShop"), state)
 						elseif getAttribute("IcedTea") >= 300000 then
 							Lobby.buyAllRRFromEventShop("SummerShop")
 							getgenv().Config["Summer Event"] = { ["Summer Event Joiner"] = { ["Auto Join"] = false } }
