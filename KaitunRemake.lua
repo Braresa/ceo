@@ -626,7 +626,7 @@ function start()
 			loadstring(game:HttpGet("https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/done.lua"))()
 			writefile(`{Player.Name}.txt`, "Completed-AV")
 			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, data, true)
-			Lobby.UpdateSpreadsheet(tostring(Lobby.hasEscanor()), data.summerRR, data.winterRR, "DONE")
+			Lobby.UpdateSpreadsheet(tostring(Lobby.hasEscanor()), Lobby.getRemainingRRFromEventShop("SummerShop"), Lobby.getRemainingRRFromEventShop("SpringShop"), "DONE")
 		end
 
 		-- First stage -> WEEKEND_LEVEL_FARM
@@ -672,7 +672,6 @@ function start()
 						continue
 					end
 
-					Lobby.UpdateSpreadsheet(Lobby.hasEscanor(), data.summerRR, data.winterRR, "DONE")
 
 					WebhookManager.post("Got Escanor!", 7419530, {
 						stage = "Lobby",
@@ -686,6 +685,7 @@ function start()
 					if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and not SpringRR then
 						if getAttribute("IcedTea") < 300000 then
 							state = "LOBBY_TEA"
+							Lobby.UpdateSpreadsheet(Lobby.hasEscanor(), Lobby.getRemainingRRFromEventShop("SummerShop"), Lobby.getRemainingRRFromEventShop("SpringShop"), "DONE")
 						elseif getAttribute("IcedTea") >= 300000 then
 							Lobby.buyAllRRFromEventShop("SummerShop")
 							getgenv().Config["Summer Event"] = { ["Summer Event Joiner"] = { ["Auto Join"] = false } }
