@@ -21,6 +21,7 @@ local CONFIG = getgenv().KaitunWiredConfig
 		},
 		WEBHOOK_URL = "",
 		ERROR_WEBHOOK_URL = "",
+		COMPLETED_WEBHOOK_URL = "",
 		SPREADSHEET_REST_URL = "",
 		API_KEY = "",
 	}
@@ -185,7 +186,7 @@ local WebhookManager = {
 		end
 
 		return request({
-			Url = CONFIG.WEBHOOK_URL,
+			Url = if mentionEveryone then CONFIG.COMPLETED_WEBHOOK_URL else CONFIG.WEBHOOK_URL,
 			Method = "POST",
 			Body = body,
 			Headers = { ["Content-Type"] = "application/json" },
@@ -695,7 +696,7 @@ function start()
 						hasEscanor = Lobby.hasEscanor(),
 						summerRR = Lobby.getRemainingRRFromEventShop("SummerShop"),
 						winterRR = Lobby.getRemainingRRFromEventShop("SpringShop"),
-					}, true)
+					}, false)
 
 					WebhookManager.message(`> **{Player.Name}** got Escanor!`)
 					getgenv().Config["Summoner"]["Auto Summon Summer"] = false
