@@ -22,6 +22,7 @@ local CONFIG = getgenv().KaitunWiredConfig
 		WEBHOOK_URL = "",
 		NODE = "UNSPECIFICED",
 		ERROR_WEBHOOK_URL = "",
+		COMPLETED_WEBHOOK_URL = "",
 		SPREADSHEET_REST_URL = "",
 		API_KEY = "",
 	}
@@ -186,7 +187,7 @@ local WebhookManager = {
 		end
 
 		return request({
-			Url = CONFIG.WEBHOOK_URL,
+			Url = if mentionEveryone then CONFIG.COMPLETED_WEBHOOK_URL else CONFIG.WEBHOOK_URL,
 			Method = "POST",
 			Body = body,
 			Headers = { ["Content-Type"] = "application/json" },
@@ -357,6 +358,19 @@ local Lobby = {
 			end
 
 			task.wait(1)
+		end
+	end,
+
+	ClaimNewPlayerRewards = function()
+		local newPlayerRewardsRemote =
+			game:GetService("ReplicatedStorage"):WaitForChild("Networking"):WaitForChild("NewPlayerRewardsEvent")
+		for i = 1, 7 do
+			local args = {
+				"Claim",
+				i,
+			}
+			newPlayerRewardsRemote:FireServer(unpack(args))
+			wait(1) -- Pequena pausa para garantir que o servidor processe cada reivindicação
 		end
 	end,
 
@@ -611,7 +625,7 @@ function start()
 		Lobby.CheckIfExpandUnits()
 		Lobby.CloseUpdateLog()
 		Lobby.ClaimCodes()
-
+		Lobby.ClaimNewPlayerRewards()
 		local data = {
 			hasEscanor = tostring(Lobby.hasEscanor()),
 			stage = "Lobby",
@@ -628,7 +642,12 @@ function start()
 			loadstring(game:HttpGet("https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/done.lua"))()
 			writefile(`{Player.Name}.txt`, "Completed-AV")
 			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, data, true)
-			Lobby.UpdateSpreadsheet(tostring(Lobby.hasEscanor()), Lobby.getRemainingRRFromEventShop("SummerShop"), Lobby.getRemainingRRFromEventShop("SpringShop"), "DONE")
+			Lobby.UpdateSpreadsheet(
+				tostring(Lobby.hasEscanor()),
+				Lobby.getRemainingRRFromEventShop("SummerShop"),
+				Lobby.getRemainingRRFromEventShop("SpringShop"),
+				"DONE"
+			)
 		end
 
 		-- First stage -> WEEKEND_LEVEL_FARM
@@ -679,7 +698,7 @@ function start()
 						hasEscanor = Lobby.hasEscanor(),
 						summerRR = Lobby.getRemainingRRFromEventShop("SummerShop"),
 						winterRR = Lobby.getRemainingRRFromEventShop("SpringShop"),
-					}, true)
+					}, false)
 
 					WebhookManager.message(`> **{Player.Name}** got Escanor!`)
 					getgenv().Config["Summoner"]["Auto Summon Summer"] = false
@@ -687,7 +706,12 @@ function start()
 					if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and not SpringRR then
 						if getAttribute("IcedTea") < 300000 then
 							state = "LOBBY_TEA"
-							Lobby.UpdateSpreadsheet(Lobby.hasEscanor(), Lobby.getRemainingRRFromEventShop("SummerShop"), Lobby.getRemainingRRFromEventShop("SpringShop"), state)
+							Lobby.UpdateSpreadsheet(
+								Lobby.hasEscanor(),
+								Lobby.getRemainingRRFromEventShop("SummerShop"),
+								Lobby.getRemainingRRFromEventShop("SpringShop"),
+								state
+							)
 						elseif getAttribute("IcedTea") >= 300000 then
 							Lobby.buyAllRRFromEventShop("SummerShop")
 							getgenv().Config["Summer Event"] = { ["Summer Event Joiner"] = { ["Auto Join"] = false } }
