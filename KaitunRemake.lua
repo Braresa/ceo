@@ -359,6 +359,19 @@ local Lobby = {
 		end
 	end,
 
+	ClaimNewPlayerRewards = function()
+		local newPlayerRewardsRemote =
+			game:GetService("ReplicatedStorage"):WaitForChild("Networking"):WaitForChild("NewPlayerRewardsEvent")
+		for i = 1, 7 do
+			local args = {
+				"Claim",
+				i,
+			}
+			newPlayerRewardsRemote:FireServer(unpack(args))
+			wait(1) -- Pequena pausa para garantir que o servidor processe cada reivindicação
+		end
+	end,
+
 	CheckIfExpandUnits = function()
 		task.spawn(function()
 			while true do
@@ -609,7 +622,7 @@ function start()
 		Lobby.CheckIfExpandUnits()
 		Lobby.CloseUpdateLog()
 		Lobby.ClaimCodes()
-
+		Lobby.ClaimNewPlayerRewards()
 		local data = {
 			hasEscanor = tostring(Lobby.hasEscanor()),
 			stage = "Lobby",
@@ -626,7 +639,12 @@ function start()
 			loadstring(game:HttpGet("https://raw.githubusercontent.com/Braresa/ceo/refs/heads/main/done.lua"))()
 			writefile(`{Player.Name}.txt`, "Completed-AV")
 			WebhookManager.post("Player " .. Player.Name .. " has completed all Kaitun steps!", 5763719, data, true)
-			Lobby.UpdateSpreadsheet(tostring(Lobby.hasEscanor()), Lobby.getRemainingRRFromEventShop("SummerShop"), Lobby.getRemainingRRFromEventShop("SpringShop"), "DONE")
+			Lobby.UpdateSpreadsheet(
+				tostring(Lobby.hasEscanor()),
+				Lobby.getRemainingRRFromEventShop("SummerShop"),
+				Lobby.getRemainingRRFromEventShop("SpringShop"),
+				"DONE"
+			)
 		end
 
 		-- First stage -> WEEKEND_LEVEL_FARM
@@ -685,7 +703,12 @@ function start()
 					if Lobby.getRemainingRRFromEventShop("SummerShop") == 200 and not SpringRR then
 						if getAttribute("IcedTea") < 300000 then
 							state = "LOBBY_TEA"
-							Lobby.UpdateSpreadsheet(Lobby.hasEscanor(), Lobby.getRemainingRRFromEventShop("SummerShop"), Lobby.getRemainingRRFromEventShop("SpringShop"), state)
+							Lobby.UpdateSpreadsheet(
+								Lobby.hasEscanor(),
+								Lobby.getRemainingRRFromEventShop("SummerShop"),
+								Lobby.getRemainingRRFromEventShop("SpringShop"),
+								state
+							)
 						elseif getAttribute("IcedTea") >= 300000 then
 							Lobby.buyAllRRFromEventShop("SummerShop")
 							getgenv().Config["Summer Event"] = { ["Summer Event Joiner"] = { ["Auto Join"] = false } }
