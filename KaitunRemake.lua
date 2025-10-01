@@ -20,6 +20,7 @@ local CONFIG = getgenv().KaitunWiredConfig
 			},
 		},
 		WEBHOOK_URL = "",
+		NODE = "UNSPECIFICED",
 		ERROR_WEBHOOK_URL = "",
 		SPREADSHEET_REST_URL = "",
 		API_KEY = "",
@@ -450,6 +451,7 @@ local Lobby = {
 		local data = {
 			Username = Player.Name,
 			Grinding = grindState,
+			Node = CONFIG.NODE,
 			Level = getAttribute("Level"),
 			IcedTea = getAttribute("IcedTea"),
 			TraitRerolls = getAttribute("TraitRerolls"),
@@ -1060,7 +1062,7 @@ task.spawn(function()
 
 		local updatedInfo = {
 			Username = Player.Name,
-			Node = "VPS-1",
+			Node = CONFIG.NODE,
 			Grinding = grindState,
 			Level = level,
 			TraitRerolls = rr,
