@@ -11,7 +11,7 @@ frame.BackgroundColor3 = Color3.new(1, 1, 1) -- White color
 frame.ZIndex = 999999 -- Ensure it's on top of other UI elements
 
 local textLabel = Instance.new("TextLabel", frame)
-textLabel.Size = UDim2.new(0, 200, 0, 50)
+textLabel.Size = UDim2.new(0.8, 0, 0.3, 0)
 textLabel.Position = UDim2.new(0.5, -100, 0.5, -25)
 textLabel.BackgroundTransparency = 1
 textLabel.Text = "DONE"
