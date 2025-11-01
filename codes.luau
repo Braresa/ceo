@@ -3,5 +3,6 @@ return {
   "4DaysLeft",
   "3DaysLeft",
   "2DaysLeftButWorkingFR",
-  "AnotherUnit"
+  "AnotherUnit",
+  "1DayLeft"
 }
