@@ -4,5 +4,8 @@ return {
   "3DaysLeft",
   "2DaysLeftButWorkingFR",
   "AnotherUnit",
-  "1DayLeft"
+  "1DayLeft",
+  "1stAnniversary",
+  "7Weeks".
+  "AboveHeaven" 
 }
