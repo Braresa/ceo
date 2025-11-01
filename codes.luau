@@ -6,6 +6,6 @@ return {
   "AnotherUnit",
   "1DayLeft",
   "1stAnniversary",
-  "7Weeks".
+  "7Weeks",
   "AboveHeaven" 
 }
